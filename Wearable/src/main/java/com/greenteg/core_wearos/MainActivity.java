@@ -55,7 +55,7 @@ import java.util.concurrent.TimeUnit;
  * IMPORTANT NOTE: Most apps shouldn't use always on ambient mode, as it drains battery life. Unless
  * required, it's much better to allow the system to take over after the user stops interacting
  * with your app.
- *
+ * <p>
  * Demonstrates support for <i>Ambient Mode</i> by attaching ambient mode support to the activity,
  * and listening for ambient mode updates (onEnterAmbient, onUpdateAmbient, and onExitAmbient) via a
  * named AmbientCallback subclass.
@@ -95,19 +95,27 @@ public class MainActivity<REQUEST_ENABLE_BT> extends FragmentActivity
 
     private static final String TAG = "MainActivity";
 
-    /** Custom 'what' for Message sent to Handler. */
+    /**
+     * Custom 'what' for Message sent to Handler.
+     */
     private static final int MSG_UPDATE_SCREEN = 0;
 
-    /** Milliseconds between updates based on state. */
+    /**
+     * Milliseconds between updates based on state.
+     */
     private static final long ACTIVE_INTERVAL_MS = TimeUnit.SECONDS.toMillis(1);
 
     private static final long AMBIENT_INTERVAL_MS = TimeUnit.SECONDS.toMillis(10);
 
-    /** Action for updating the display in ambient mode, per our custom refresh cycle. */
+    /**
+     * Action for updating the display in ambient mode, per our custom refresh cycle.
+     */
     private static final String AMBIENT_UPDATE_ACTION =
             "com.greenteg.core_wearos.action.AMBIENT_UPDATE";
 
-    /** Number of pixels to offset the content rendered in the display to prevent screen burn-in. */
+    /**
+     * Number of pixels to offset the content rendered in the display to prevent screen burn-in.
+     */
     private static final int BURN_IN_OFFSET_PX = 10;
 
     /**
@@ -116,7 +124,9 @@ public class MainActivity<REQUEST_ENABLE_BT> extends FragmentActivity
      */
     private AmbientModeSupport.AmbientController mAmbientController;
 
-    /** If the display is low-bit in ambient mode. i.e. it requires anti-aliased fonts. */
+    /**
+     * If the display is low-bit in ambient mode. i.e. it requires anti-aliased fonts.
+     */
     private boolean mIsLowBitAmbient;
 
     /**
@@ -154,23 +164,6 @@ public class MainActivity<REQUEST_ENABLE_BT> extends FragmentActivity
      */
     private final Handler mActiveModeUpdateHandler = new ActiveModeUpdateHandler(this);
 
-    /**
-     * Bluetooth parameters
-     *
-     */
-    private BluetoothAdapter mBluetoothAdapter;
-
-    private BluetoothLeScanner bluetoothLeScanner =
-            BluetoothAdapter.getDefaultAdapter().getBluetoothLeScanner();
-    private boolean mScanning;
-    private Handler handler = new Handler();
-
-    // Stops scanning after 10 seconds.
-    private static final long SCAN_PERIOD = 30000;
-
-    private LeDeviceListAdapter mLeDeviceListAdapter;
-    //LeDeviceListAdapter mLeDeviceListAdapter = new LeDeviceListAdapter();
-
     //for permission request and turn-on-bluetooth request
     private final int REQUEST_LOCATION_PERMISSION = 1;
     private static final int REQUEST_ENABLE_BT = 1;
@@ -186,17 +179,11 @@ public class MainActivity<REQUEST_ENABLE_BT> extends FragmentActivity
         if (ActivityCompat.checkSelfPermission(
                 this, Manifest.permission.ACCESS_FINE_LOCATION) ==
                 PackageManager.PERMISSION_GRANTED) {
-            // You can use the API that requires the permission.
-        } else if (false) { //shouldShowRequestPermissionRationale(...)
-            // In an educational UI, explain to the user why your app requires this
-            // permission for a specific feature to behave as expected. In this UI,
-            // include a "cancel" or "no thanks" button that allows the user to
-            // continue using your app without granting the permission.
-            //showInContextUI(...);
+            connectToSavedDevice();
         } else {
             // You can directly ask for the permission.
             ActivityCompat.requestPermissions(this,
-                    new String[] { Manifest.permission.ACCESS_FINE_LOCATION },
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     REQUEST_LOCATION_PERMISSION);
         }
 
@@ -247,30 +234,27 @@ public class MainActivity<REQUEST_ENABLE_BT> extends FragmentActivity
         mDrawCountTextView = findViewById(R.id.draw_count);
     }
 
-    public void startScanButtonClicked(View view){
+    public void startScanButtonClicked(View view) {
         Intent intent = new Intent(this, DeviceScanActivity.class);
         startActivity(intent);
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                                            int[] grantResults) {
-        switch (requestCode) {
-            case REQUEST_LOCATION_PERMISSION:
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0 &&
-                        grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    if (ContextCompat.checkSelfPermission(MainActivity.this,
-                            Manifest.permission.ACCESS_FINE_LOCATION)==PackageManager.PERMISSION_GRANTED){
-                        Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show();
-                    }
-                }else {
-                    Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show();
+                                           int[] grantResults) {
+        if (requestCode == REQUEST_LOCATION_PERMISSION) {
+            // If request is cancelled, the result arrays are empty.
+            if (grantResults.length > 0 &&
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                if (ContextCompat.checkSelfPermission(MainActivity.this,
+                        Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show();
+                    connectToSavedDevice();
                 }
-                return;
+            } else {
+                Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show();
+            }
         }
-        // Other 'case' lines to check for other
-        // permissions this app might request.
     }
 
 
@@ -300,6 +284,16 @@ public class MainActivity<REQUEST_ENABLE_BT> extends FragmentActivity
         mAmbientUpdateAlarmManager.cancel(mAmbientUpdatePendingIntent);
     }
 
+    private void connectToSavedDevice() {
+        String deviceAddress = AppPreferences.getDeviceAddress(this);
+
+        if (deviceAddress != null) {
+            Intent intent = new Intent(this, DeviceScanActivity.class);
+            intent.putExtra(DeviceScanActivity.CONNECT_TO_DEVICE_ADDRESS_ACTION,deviceAddress);
+            startActivity(intent);
+        }
+    }
+
     /**
      * Loads data/updates screen (via method), but most importantly, sets up the next refresh
      * (active mode = Handler and ambient mode = Alarm).
@@ -326,7 +320,9 @@ public class MainActivity<REQUEST_ENABLE_BT> extends FragmentActivity
         }
     }
 
-    /** Updates display based on Ambient state. If you need to pull data, you should do it here. */
+    /**
+     * Updates display based on Ambient state. If you need to pull data, you should do it here.
+     */
     private void loadDataAndUpdateScreen() {
 
         mDrawCount += 1;
@@ -349,7 +345,7 @@ public class MainActivity<REQUEST_ENABLE_BT> extends FragmentActivity
                     getString(R.string.update_rate_label, (AMBIENT_INTERVAL_MS / 1000)));
 
         } else {
-            String deviceAddress="00:00:00";
+            String deviceAddress = "00:00:00";
 
             mTimeStampTextView.setText(getString(R.string.timestamp_label, deviceAddress));
 
@@ -367,7 +363,9 @@ public class MainActivity<REQUEST_ENABLE_BT> extends FragmentActivity
     }
 
     private class MyAmbientCallback extends AmbientModeSupport.AmbientCallback {
-        /** Prepares the UI for ambient mode. */
+        /**
+         * Prepares the UI for ambient mode.
+         */
         @Override
         public void onEnterAmbient(Bundle ambientDetails) {
             super.onEnterAmbient(ambientDetails);
@@ -429,7 +427,9 @@ public class MainActivity<REQUEST_ENABLE_BT> extends FragmentActivity
             }
         }
 
-        /** Restores the UI to active (non-ambient) mode. */
+        /**
+         * Restores the UI to active (non-ambient) mode.
+         */
         @Override
         public void onExitAmbient() {
             super.onExitAmbient();
@@ -458,7 +458,9 @@ public class MainActivity<REQUEST_ENABLE_BT> extends FragmentActivity
         }
     }
 
-    /** Handler separated into static class to avoid memory leaks. */
+    /**
+     * Handler separated into static class to avoid memory leaks.
+     */
     private static class ActiveModeUpdateHandler extends Handler {
         private final WeakReference<MainActivity> mMainActivityWeakReference;
 
@@ -476,74 +478,6 @@ public class MainActivity<REQUEST_ENABLE_BT> extends FragmentActivity
                 }
             }
         }
-    }
-
-
-    // Adapter for holding devices found through scanning.
-    private class LeDeviceListAdapter extends BaseAdapter {
-        private ArrayList<BluetoothDevice> mLeDevices;
-        private LayoutInflater mInflator;
-
-        public LeDeviceListAdapter() {
-            super();
-            mLeDevices = new ArrayList<BluetoothDevice>();
-            mInflator = MainActivity.this.getLayoutInflater();
-        }
-
-        public void addDevice(BluetoothDevice device) {
-            if (!mLeDevices.contains(device)) {
-                mLeDevices.add(device);
-            }
-        }
-
-        public BluetoothDevice getDevice(int position) {
-            return mLeDevices.get(position);
-        }
-
-        public void clear() {
-            mLeDevices.clear();
-        }
-
-        @Override
-        public int getCount() {
-            return mLeDevices.size();
-        }
-
-        @Override
-        public Object getItem(int i) {
-            return mLeDevices.get(i);
-        }
-
-        @Override
-        public long getItemId(int i) {
-            return i;
-        }
-
-        @Override
-        public View getView(int i, View view, ViewGroup viewGroup) {
-            DeviceScanActivity.ViewHolder viewHolder;
-            // General ListView optimization code.
-            if (view == null) {
-                view = mInflator.inflate(R.layout.listitem_device, null);
-                viewHolder = new DeviceScanActivity.ViewHolder();
-                viewHolder.deviceAddress = (TextView) view.findViewById(R.id.device_address);
-                viewHolder.deviceName = (TextView) view.findViewById(R.id.device_name);
-                view.setTag(viewHolder);
-            } else {
-                viewHolder = (DeviceScanActivity.ViewHolder) view.getTag();
-            }
-
-            BluetoothDevice device = mLeDevices.get(i);
-            final String deviceName = device.getName();
-            if (deviceName != null && deviceName.length() > 0)
-                viewHolder.deviceName.setText(deviceName);
-            else
-                viewHolder.deviceName.setText(R.string.unknown_device);
-            viewHolder.deviceAddress.setText(device.getAddress());
-
-            return view;
-        }
-
     }
 
     @Override

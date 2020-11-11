@@ -28,6 +28,7 @@ import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -49,6 +50,8 @@ import static android.bluetooth.le.ScanSettings.SCAN_MODE_LOW_LATENCY;
 
 public class DeviceScanActivity extends ListActivity {
     private static final String TAG = "DeviceScanActivity";
+
+    public static final String CONNECT_TO_DEVICE_ADDRESS_ACTION = "CONNECT_TO_DEVICE_ADDRESS_ACTION";
 
     private LeDeviceListAdapter mLeDeviceListAdapter;
     private BluetoothAdapter mBluetoothAdapter;
@@ -137,18 +140,9 @@ public class DeviceScanActivity extends ListActivity {
     protected void onListItemClick(ListView l, View v, int position, long id) {
         final BluetoothDevice device = mLeDeviceListAdapter.getDevice(position);
         if (device == null) return;
-        final Intent intent = new Intent(this, CBTDeviceControlActivity.class);
-        intent.putExtra(CBTDeviceControlActivity.EXTRAS_DEVICE_NAME, device.getName());
-        intent.putExtra(CBTDeviceControlActivity.EXTRAS_DEVICE_ADDRESS, device.getAddress());
-        if (mScanning) {
-            //mBluetoothAdapter.stopLeScan(mLeScanCallback);
-            //replace deprecated stopLeScan
-            bluetoothLeScanner.stopScan(mScanCallback);
-            mScanning = false;
-        }
-        startActivity(intent);
-    }
 
+        connectToDevice(device);
+    }
 
     private void scanLeDevice(final boolean enable) {
         if (enable) {
@@ -182,6 +176,20 @@ public class DeviceScanActivity extends ListActivity {
         invalidateOptionsMenu();
     }
 
+    private void connectToDevice(BluetoothDevice device) {
+        final Intent intent = new Intent(this, CBTDeviceControlActivity.class);
+        intent.putExtra(CBTDeviceControlActivity.EXTRAS_DEVICE_NAME, device.getName());
+        intent.putExtra(CBTDeviceControlActivity.EXTRAS_DEVICE_ADDRESS, device.getAddress());
+
+        AppPreferences.saveDevice(this, device);
+
+        if (mScanning) {
+            bluetoothLeScanner.stopScan(mScanCallback);
+            mScanning = false;
+        }
+        startActivity(intent);
+    }
+
     // Adapter for holding devices found through scanning.
     class LeDeviceListAdapter extends BaseAdapter {
         private ArrayList<BluetoothDevice> mLeDevices;
@@ -194,7 +202,7 @@ public class DeviceScanActivity extends ListActivity {
         }
 
         public void addDevice(BluetoothDevice device) {
-            if(!mLeDevices.contains(device)) {
+            if (!mLeDevices.contains(device)) {
                 mLeDevices.add(device);
             }
         }
@@ -248,32 +256,23 @@ public class DeviceScanActivity extends ListActivity {
         }
     }
 
-    // Device scan callback.
-    private BluetoothAdapter.LeScanCallback mLeScanCallback =
-            new BluetoothAdapter.LeScanCallback() {
-
-        @Override
-        public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    mLeDeviceListAdapter.addDevice(device);
-                    // LOG message MOT
-                    Log.d("deviceScanActivity", "adding a device");
-                    mLeDeviceListAdapter.notifyDataSetChanged();
-                }
-            });
-        }
-    };
-
-    //new device scan callback
     private ScanCallback mScanCallback = new ScanCallback() {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
             super.onScanResult(callbackType, result);
             BluetoothDevice device = result.getDevice();
             String name = device.getName();
-            Log.d(TAG, "address: " + device.getAddress()+ "name: "+ name);
+            Log.d(TAG, "address: " + device.getAddress() + "name: " + name);
+
+            String addressToConnect = getIntent().getExtras().getString(CONNECT_TO_DEVICE_ADDRESS_ACTION);
+
+            if (addressToConnect != null) {
+                if (device.getAddress().equals(addressToConnect)) {
+                    connectToDevice(device);
+                    return;
+                }
+            }
+
             if (name != null && name.contains("CORE")) {
                 mLeDeviceListAdapter.addDevice(device);
 
