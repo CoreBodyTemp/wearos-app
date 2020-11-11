@@ -105,34 +105,6 @@ public class DeviceScanActivity extends ListActivity {
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main, menu);
-        if (!mScanning) {
-            menu.findItem(R.id.menu_stop).setVisible(false);
-            menu.findItem(R.id.menu_scan).setVisible(true);
-            menu.findItem(R.id.menu_refresh).setActionView(null);
-        } else {
-            menu.findItem(R.id.menu_stop).setVisible(true);
-            menu.findItem(R.id.menu_scan).setVisible(false);
-            menu.findItem(R.id.menu_refresh).setActionView(null); // MOT changed: no spinning wheel (need to put actionbar_indeterminate_progress.xml in layout
-        }
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.menu_scan:
-                mLeDeviceListAdapter.clear();
-                scanLeDevice(true);
-                break;
-            case R.id.menu_stop:
-                scanLeDevice(false);
-                break;
-        }
-        return true;
-    }
 
     @Override
     protected void onResume() {
@@ -309,12 +281,12 @@ public class DeviceScanActivity extends ListActivity {
             super.onScanResult(callbackType, result);
             BluetoothDevice device = result.getDevice();
             String name = device.getName();
-            //Log.d(TAG, "address: " + device.getAddress()+ "name: "+ name);
+            Log.d(TAG, "address: " + device.getAddress()+ "name: "+ name);
             if (name != null && name.contains("CORE")) {
                 mLeDeviceListAdapter.addDevice(device);
 
                 // LOG message MOT
-                //Log.d("deviceScanActivity", "adding a device");
+                Log.d("deviceScanActivity", "adding a device");
                 mLeDeviceListAdapter.notifyDataSetChanged();
             }
         }

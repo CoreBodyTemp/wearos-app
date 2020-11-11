@@ -1,2 +1,2 @@
 include ':Wearable'
-rootProject.name = "My LeGattExample"
+rootProject.name = "Core WearOS app"
