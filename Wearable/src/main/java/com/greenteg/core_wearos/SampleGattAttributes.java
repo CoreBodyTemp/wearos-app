@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.android.wearable.wear.core_wearos;
+package com.greenteg.core_wearos;
 
 import java.util.HashMap;
 

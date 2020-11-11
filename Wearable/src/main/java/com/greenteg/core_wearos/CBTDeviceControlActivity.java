@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.android.wearable.wear.core_wearos;
+package com.greenteg.core_wearos;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothGattCharacteristic;
@@ -28,18 +28,15 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.ExpandableListView;
-import android.widget.SimpleExpandableListAdapter;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import static com.example.android.wearable.wear.core_wearos.R.layout.core_body_temperature;
+import static com.greenteg.core_wearos.R.layout.core_body_temperature;
 
 /**
  * For a given BLE device, this Activity provides the user interface to connect, display data,

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.android.wearable.wear.core_wearos;
+package com.greenteg.core_wearos;
 
 import android.Manifest;
 import android.app.Activity;
@@ -21,10 +21,7 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.BluetoothLeScanner;
-import android.bluetooth.le.ScanCallback;
-import android.bluetooth.le.ScanResult;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -108,7 +105,7 @@ public class MainActivity<REQUEST_ENABLE_BT> extends FragmentActivity
 
     /** Action for updating the display in ambient mode, per our custom refresh cycle. */
     private static final String AMBIENT_UPDATE_ACTION =
-            "com.example.android.wearable.wear.core_wearos.action.AMBIENT_UPDATE";
+            "com.greenteg.core_wearos.action.AMBIENT_UPDATE";
 
     /** Number of pixels to offset the content rendered in the display to prevent screen burn-in. */
     private static final int BURN_IN_OFFSET_PX = 10;

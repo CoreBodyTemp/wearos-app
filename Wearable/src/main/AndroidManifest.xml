@@ -14,7 +14,7 @@
      limitations under the License.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.example.android.wearable.wear.core_wearos">
+          package="com.greenteg.core_wearos">
 
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="com.android.alarm.permission.SET_ALARM"/>
@@ -45,7 +45,7 @@
             intent will open a new activity every time the Alarm is triggered rather than reusing
             the same (already active) Activity.
         -->
-        <activity android:name="com.example.android.wearable.wear.core_wearos.MainActivity"
+        <activity android:name="com.greenteg.core_wearos.MainActivity"
             android:label="@string/app_name"
             android:launchMode="singleInstance"
             android:configChanges="orientation|keyboardHidden"
@@ -55,8 +55,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.example.android.wearable.wear.core_wearos.CBTDeviceControlActivity"/>
-        <activity android:name="com.example.android.wearable.wear.core_wearos.DeviceScanActivity"/>
-        <service android:name="com.example.android.wearable.wear.core_wearos.BluetoothLeService" android:enabled="true"/>
+        <activity android:name="com.greenteg.core_wearos.CBTDeviceControlActivity"/>
+        <activity android:name="com.greenteg.core_wearos.DeviceScanActivity"/>
+        <service android:name="com.greenteg.core_wearos.BluetoothLeService" android:enabled="true"/>
     </application>
 </manifest>

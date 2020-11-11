@@ -14,22 +14,26 @@
  * limitations under the License.
  */
 
-package com.example.android.bluetoothlegatt;
+package com.greenteg.core_wearos;
 
 import android.app.Activity;
 import android.app.ListActivity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
+import android.bluetooth.le.BluetoothLeScanner;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanFilter;
+import android.bluetooth.le.ScanResult;
+import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.ParcelUuid;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -38,13 +42,29 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+import static android.bluetooth.le.ScanSettings.SCAN_MODE_LOW_LATENCY;
 
 /**
  * Activity for scanning and displaying available Bluetooth LE devices.
  */
 public class DeviceScanActivity extends ListActivity {
+    private static final String TAG = "DeviceScanActivity";
+
     private LeDeviceListAdapter mLeDeviceListAdapter;
     private BluetoothAdapter mBluetoothAdapter;
+    // used to start/stop scan:
+    private BluetoothLeScanner bluetoothLeScanner =
+            BluetoothAdapter.getDefaultAdapter().getBluetoothLeScanner();
+    // for filtering:
+    public final static UUID UUID_TEMPERATURE_MEASUREMENT =
+            UUID.fromString(SampleGattAttributes.TEMPERATURE_MEASUREMENT);
+    private List<ScanFilter> mFilters = new ArrayList<>();  // not used currently
+    private ScanSettings settings;
+
+
     private boolean mScanning;
     private Handler mHandler;
 
@@ -56,7 +76,7 @@ public class DeviceScanActivity extends ListActivity {
     public void onCreate(Bundle savedInstanceState) {
         Log.d("deviceScanActivity", "onCreate()");
         super.onCreate(savedInstanceState);
-        getActionBar().setTitle(R.string.title_devices);
+        //getActionBar().setTitle(R.string.title_devices);
         mHandler = new Handler();
 
         // Use this check to determine whether BLE is supported on the device.  Then you can
@@ -79,6 +99,7 @@ public class DeviceScanActivity extends ListActivity {
             return;
         }
     }
+
 
     @Override
     protected void onResume() {
@@ -114,44 +135,58 @@ public class DeviceScanActivity extends ListActivity {
         mLeDeviceListAdapter.clear();
     }
 
+
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
         final BluetoothDevice device = mLeDeviceListAdapter.getDevice(position);
         if (device == null) return;
-        final Intent intent = new Intent(this, DeviceControlActivity.class);
-        intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_NAME, device.getName());
-        intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_ADDRESS, device.getAddress());
+        final Intent intent = new Intent(this, CBTDeviceControlActivity.class);
+        intent.putExtra(CBTDeviceControlActivity.EXTRAS_DEVICE_NAME, device.getName());
+        intent.putExtra(CBTDeviceControlActivity.EXTRAS_DEVICE_ADDRESS, device.getAddress());
         if (mScanning) {
-            mBluetoothAdapter.stopLeScan(mLeScanCallback);
+            //mBluetoothAdapter.stopLeScan(mLeScanCallback);
+            //replace deprecated stopLeScan
+            bluetoothLeScanner.stopScan(mScanCallback);
             mScanning = false;
         }
         startActivity(intent);
     }
 
+
     private void scanLeDevice(final boolean enable) {
         if (enable) {
             // Stops scanning after a pre-defined scan period.
+            ScanFilter uuidFilter = new ScanFilter.Builder().setServiceUuid(new ParcelUuid(UUID_TEMPERATURE_MEASUREMENT)).build();
+            // don't add uuid filter because it doesn't work
+            //mFilters.add(uuidFilter);
+            settings = new ScanSettings.Builder().setScanMode(SCAN_MODE_LOW_LATENCY).build();  //default settings
             mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     mScanning = false;
-                    mBluetoothAdapter.stopLeScan(mLeScanCallback);
+                    //mBluetoothAdapter.stopLeScan(mLeScanCallback);
+                    // replaced because deprecated:
+                    bluetoothLeScanner.stopScan(mScanCallback);
                     invalidateOptionsMenu();
                 }
             }, SCAN_PERIOD);
 
             mScanning = true;
             Log.d("deviceScanActivity", "scanLeDevice: startLeScan.");
-            mBluetoothAdapter.startLeScan(mLeScanCallback);
+            //mBluetoothAdapter.startLeScan(mLeScanCallback);
+            // replaced because deprecated:
+            bluetoothLeScanner.startScan(mFilters, settings, mScanCallback);
         } else {
             mScanning = false;
-            mBluetoothAdapter.stopLeScan(mLeScanCallback);
+            //mBluetoothAdapter.stopLeScan(mLeScanCallback);
+            // replaced because deprecated:
+            bluetoothLeScanner.stopScan(mScanCallback);
         }
         invalidateOptionsMenu();
     }
 
     // Adapter for holding devices found through scanning.
-    private class LeDeviceListAdapter extends BaseAdapter {
+    class LeDeviceListAdapter extends BaseAdapter {
         private ArrayList<BluetoothDevice> mLeDevices;
         private LayoutInflater mInflator;
 
@@ -231,6 +266,24 @@ public class DeviceScanActivity extends ListActivity {
                     mLeDeviceListAdapter.notifyDataSetChanged();
                 }
             });
+        }
+    };
+
+    //new device scan callback
+    private ScanCallback mScanCallback = new ScanCallback() {
+        @Override
+        public void onScanResult(int callbackType, ScanResult result) {
+            super.onScanResult(callbackType, result);
+            BluetoothDevice device = result.getDevice();
+            String name = device.getName();
+            Log.d(TAG, "address: " + device.getAddress()+ "name: "+ name);
+            if (name != null && name.contains("CORE")) {
+                mLeDeviceListAdapter.addDevice(device);
+
+                // LOG message MOT
+                Log.d("deviceScanActivity", "adding a device");
+                mLeDeviceListAdapter.notifyDataSetChanged();
+            }
         }
     };
 
