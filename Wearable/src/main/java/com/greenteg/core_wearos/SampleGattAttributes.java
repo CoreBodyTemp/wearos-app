@@ -18,9 +18,6 @@ package com.greenteg.core_wearos;
 
 import java.util.HashMap;
 
-/**
- * This class includes a small subset of standard GATT attributes for demonstration purposes.
- */
 public class SampleGattAttributes {
     private static HashMap<String, String> attributes = new HashMap();
     public static String TEMPERATURE_MEASUREMENT = "00002a1c-0000-1000-8000-00805f9b34fb";

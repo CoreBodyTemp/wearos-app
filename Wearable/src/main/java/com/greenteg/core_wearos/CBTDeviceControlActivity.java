@@ -38,12 +38,6 @@ import java.util.List;
 
 import static com.greenteg.core_wearos.R.layout.core_body_temperature;
 
-/**
- * For a given BLE device, this Activity provides the user interface to connect, display data,
- * and display GATT services and characteristics supported by the device.  The Activity
- * communicates with {@code BluetoothLeService}, which in turn interacts with the
- * Bluetooth LE API.
- */
 public class CBTDeviceControlActivity extends Activity {
     private final static String TAG = CBTDeviceControlActivity.class.getSimpleName();
 
@@ -84,7 +78,6 @@ public class CBTDeviceControlActivity extends Activity {
     };
 
     // implementation of gattCallback from https://github.com/SiliconLabs/EFRConnect-android
-
 
 
     // Handles various events fired by the Service.
@@ -148,8 +141,7 @@ public class CBTDeviceControlActivity extends Activity {
                     }
                     return false;
                 }
-    };
-
+            };
 
 
     private void clearUI() {
@@ -213,14 +205,11 @@ public class CBTDeviceControlActivity extends Activity {
         if (data != null) {
             // instead of writing to the data field of the gattattributes listadapter, we write to
             // the field. TODO: no support to detect unit (°C or F) yet. assumes °C
-            mDataField.setText(data+"°C");
-            Log.d(TAG, "received data: "+ data );
+            mDataField.setText(data + "°C");
+            Log.d(TAG, "received data: " + data);
         }
     }
 
-    // Demonstrates how to iterate through the supported GATT Services/Characteristics.
-    // In this sample, we populate the data structure that is bound to the ExpandableListView
-    // on the UI.
     private void listGattServices(List<BluetoothGattService> gattServices) {
         if (gattServices == null) return;
         String uuid = null;

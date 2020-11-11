@@ -47,9 +47,6 @@ import java.util.UUID;
 
 import static android.bluetooth.le.ScanSettings.SCAN_MODE_LOW_LATENCY;
 
-/**
- * Activity for scanning and displaying available Bluetooth LE devices.
- */
 public class DeviceScanActivity extends ListActivity {
     private static final String TAG = "DeviceScanActivity";
 

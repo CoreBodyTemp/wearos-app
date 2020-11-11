@@ -37,10 +37,6 @@ import com.greenteg.core_wearos.models.TemperatureReading;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Service for managing connection and data communication with a GATT server hosted on a
- * given Bluetooth LE device.
- */
 public class BluetoothLeService extends Service {
     private final static String TAG = BluetoothLeService.class.getSimpleName();
 
@@ -68,8 +64,6 @@ public class BluetoothLeService extends Service {
     public final static UUID UUID_TEMPERATURE_MEASUREMENT =
             UUID.fromString(SampleGattAttributes.TEMPERATURE_MEASUREMENT);
 
-    // Implements callback methods for GATT events that the app cares about.  For example,
-    // connection change and services discovered.
     private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
