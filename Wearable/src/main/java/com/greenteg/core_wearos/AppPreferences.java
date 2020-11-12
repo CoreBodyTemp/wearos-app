@@ -24,4 +24,11 @@ public class AppPreferences {
         SharedPreferences preferences = context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE);
         return preferences.getString(DEVICE_ADDRESS_PREFERENCE, null);
     }
+
+    public static void removeDevice(Context context) {
+        SharedPreferences preferences = context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.remove(DEVICE_ADDRESS_PREFERENCE);
+        editor.apply();
+    }
 }

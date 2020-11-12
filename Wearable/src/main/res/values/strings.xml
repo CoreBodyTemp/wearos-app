@@ -47,5 +47,6 @@
     <!--CBT related constants-->
     <string name="current_CBT">--</string>
     <string name="display_curr_CBT">Core Body Temperature</string>
+    <string name="forget">Forget</string>
 
 </resources>

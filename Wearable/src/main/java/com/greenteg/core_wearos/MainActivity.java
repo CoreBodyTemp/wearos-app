@@ -289,7 +289,6 @@ public class MainActivity<REQUEST_ENABLE_BT> extends FragmentActivity
 
         if (deviceAddress != null) {
             Intent intent = new Intent(this, DeviceScanActivity.class);
-            intent.putExtra(DeviceScanActivity.CONNECT_TO_DEVICE_ADDRESS_ACTION,deviceAddress);
             startActivity(intent);
         }
     }

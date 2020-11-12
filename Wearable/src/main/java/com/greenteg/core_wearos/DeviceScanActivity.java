@@ -51,8 +51,6 @@ import static android.bluetooth.le.ScanSettings.SCAN_MODE_LOW_LATENCY;
 public class DeviceScanActivity extends ListActivity {
     private static final String TAG = "DeviceScanActivity";
 
-    public static final String CONNECT_TO_DEVICE_ADDRESS_ACTION = "CONNECT_TO_DEVICE_ADDRESS_ACTION";
-
     private LeDeviceListAdapter mLeDeviceListAdapter;
     private BluetoothAdapter mBluetoothAdapter;
     // used to start/stop scan:
@@ -155,8 +153,6 @@ public class DeviceScanActivity extends ListActivity {
                 @Override
                 public void run() {
                     mScanning = false;
-                    //mBluetoothAdapter.stopLeScan(mLeScanCallback);
-                    // replaced because deprecated:
                     bluetoothLeScanner.stopScan(mScanCallback);
                     invalidateOptionsMenu();
                 }
@@ -164,13 +160,9 @@ public class DeviceScanActivity extends ListActivity {
 
             mScanning = true;
             Log.d("deviceScanActivity", "scanLeDevice: startLeScan.");
-            //mBluetoothAdapter.startLeScan(mLeScanCallback);
-            // replaced because deprecated:
             bluetoothLeScanner.startScan(mFilters, settings, mScanCallback);
         } else {
             mScanning = false;
-            //mBluetoothAdapter.stopLeScan(mLeScanCallback);
-            // replaced because deprecated:
             bluetoothLeScanner.stopScan(mScanCallback);
         }
         invalidateOptionsMenu();
@@ -264,7 +256,7 @@ public class DeviceScanActivity extends ListActivity {
             String name = device.getName();
             Log.d(TAG, "address: " + device.getAddress() + "name: " + name);
 
-            String addressToConnect = getIntent().getExtras().getString(CONNECT_TO_DEVICE_ADDRESS_ACTION);
+            String addressToConnect = AppPreferences.getDeviceAddress( DeviceScanActivity.this);
 
             if (addressToConnect != null) {
                 if (device.getAddress().equals(addressToConnect)) {

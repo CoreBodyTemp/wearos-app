@@ -273,6 +273,11 @@ public class CBTDeviceControlActivity extends Activity {
         }
     }
 
+    public void disconnectClicked(View view) {
+        AppPreferences.removeDevice(this);
+        finish();
+    }
+
     private static IntentFilter makeGattUpdateIntentFilter() {
         final IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_CONNECTED);
