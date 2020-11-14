@@ -38,8 +38,8 @@ import java.util.List;
 
 import static com.greenteg.core_wearos.R.layout.core_body_temperature;
 
-public class CBTDeviceControlActivity extends Activity {
-    private final static String TAG = CBTDeviceControlActivity.class.getSimpleName();
+public class DeviceControlActivity extends Activity {
+    private final static String TAG = DeviceControlActivity.class.getSimpleName();
 
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";

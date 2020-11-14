@@ -28,54 +28,70 @@ import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.ParcelUuid;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import static android.bluetooth.le.ScanSettings.SCAN_MODE_LOW_LATENCY;
 
-public class DeviceScanActivity extends ListActivity {
+public class DeviceScanActivity extends Activity {
     private static final String TAG = "DeviceScanActivity";
 
-    private LeDeviceListAdapter mLeDeviceListAdapter;
     private BluetoothAdapter mBluetoothAdapter;
     // used to start/stop scan:
-    private BluetoothLeScanner bluetoothLeScanner =
+    private BluetoothLeScanner mBluetoothLeScanner =
             BluetoothAdapter.getDefaultAdapter().getBluetoothLeScanner();
-    // for filtering:
-    public final static UUID UUID_TEMPERATURE_MEASUREMENT =
-            UUID.fromString(SampleGattAttributes.TEMPERATURE_MEASUREMENT);
     private List<ScanFilter> mFilters = new ArrayList<>();  // not used currently
-    private ScanSettings settings;
+    private ScanSettings mSettings;
+    private ProgressBar mProgressBar;
 
 
     private boolean mScanning;
-    private Handler mHandler;
+
+    private LeDeviceListAdapter mDeviceListAdapter;
+    private ArrayList<BluetoothDevice> mDeviceList = new ArrayList<>();
 
     private static final int REQUEST_ENABLE_BT = 1;
-    // Stops scanning after 10 seconds.
-    private static final long SCAN_PERIOD = 30000;  // MOT changed
+
+    private void setScanning(boolean enabled) {
+        mScanning = enabled;
+        if (enabled) {
+            mProgressBar.setVisibility(View.VISIBLE);
+        } else {
+            mProgressBar.setVisibility(View.INVISIBLE);
+        }
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        Log.d("deviceScanActivity", "onCreate()");
         super.onCreate(savedInstanceState);
-        //getActionBar().setTitle(R.string.title_devices);
-        mHandler = new Handler();
+        setContentView(R.layout.activity_device_scan);
+
+        Log.d("deviceScanActivity", "onCreate()");
+        mProgressBar = findViewById(R.id.progress_bar);
+
+        mDeviceListAdapter = new LeDeviceListAdapter(mDeviceList);
+        RecyclerView recyclerView = findViewById(R.id.recycler_view);
+        recyclerView.setAdapter(mDeviceListAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager((this)));
 
         // Use this check to determine whether BLE is supported on the device.  Then you can
         // selectively disable BLE-related features.
@@ -94,10 +110,8 @@ public class DeviceScanActivity extends ListActivity {
         if (mBluetoothAdapter == null) {
             Toast.makeText(this, R.string.error_bluetooth_not_supported, Toast.LENGTH_SHORT).show();
             finish();
-            return;
         }
     }
-
 
     @Override
     protected void onResume() {
@@ -110,9 +124,8 @@ public class DeviceScanActivity extends ListActivity {
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
         }
 
-        // Initializes list view adapter.
-        mLeDeviceListAdapter = new LeDeviceListAdapter();
-        setListAdapter(mLeDeviceListAdapter);
+        mDeviceList.clear();
+        mDeviceListAdapter.notifyDataSetChanged();
         scanLeDevice(true);
     }
 
@@ -130,121 +143,96 @@ public class DeviceScanActivity extends ListActivity {
     protected void onPause() {
         super.onPause();
         scanLeDevice(false);
-        mLeDeviceListAdapter.clear();
-    }
-
-
-    @Override
-    protected void onListItemClick(ListView l, View v, int position, long id) {
-        final BluetoothDevice device = mLeDeviceListAdapter.getDevice(position);
-        if (device == null) return;
-
-        connectToDevice(device);
+        mDeviceList.clear();
+        mDeviceListAdapter.notifyDataSetChanged();
     }
 
     private void scanLeDevice(final boolean enable) {
         if (enable) {
-            // Stops scanning after a pre-defined scan period.
-            ScanFilter uuidFilter = new ScanFilter.Builder().setServiceUuid(new ParcelUuid(UUID_TEMPERATURE_MEASUREMENT)).build();
-            // don't add uuid filter because it doesn't work
-            //mFilters.add(uuidFilter);
-            settings = new ScanSettings.Builder().setScanMode(SCAN_MODE_LOW_LATENCY).build();  //default settings
-            mHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    mScanning = false;
-                    bluetoothLeScanner.stopScan(mScanCallback);
-                    invalidateOptionsMenu();
-                }
-            }, SCAN_PERIOD);
+            mSettings = new ScanSettings.Builder().setScanMode(SCAN_MODE_LOW_LATENCY).build();  //default settings
 
-            mScanning = true;
+            setScanning(true);
             Log.d("deviceScanActivity", "scanLeDevice: startLeScan.");
-            bluetoothLeScanner.startScan(mFilters, settings, mScanCallback);
+            mBluetoothLeScanner.startScan(mFilters, mSettings, mScanCallback);
         } else {
-            mScanning = false;
-            bluetoothLeScanner.stopScan(mScanCallback);
+            setScanning(false);
+            mBluetoothLeScanner.stopScan(mScanCallback);
         }
         invalidateOptionsMenu();
     }
 
     private void connectToDevice(BluetoothDevice device) {
-        final Intent intent = new Intent(this, CBTDeviceControlActivity.class);
-        intent.putExtra(CBTDeviceControlActivity.EXTRAS_DEVICE_NAME, device.getName());
-        intent.putExtra(CBTDeviceControlActivity.EXTRAS_DEVICE_ADDRESS, device.getAddress());
+        final Intent intent = new Intent(this, DeviceControlActivity.class);
+        intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_NAME, device.getName());
+        intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_ADDRESS, device.getAddress());
 
         AppPreferences.saveDevice(this, device);
 
         if (mScanning) {
-            bluetoothLeScanner.stopScan(mScanCallback);
-            mScanning = false;
+            mBluetoothLeScanner.stopScan(mScanCallback);
+            setScanning(false);
         }
         startActivity(intent);
     }
 
+
     // Adapter for holding devices found through scanning.
-    class LeDeviceListAdapter extends BaseAdapter {
-        private ArrayList<BluetoothDevice> mLeDevices;
-        private LayoutInflater mInflator;
+    class LeDeviceListAdapter extends RecyclerView.Adapter<LeDeviceListAdapter.ViewHolder> {
 
-        public LeDeviceListAdapter() {
+        class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+            TextView deviceName;
+            TextView deviceAddress;
+            BluetoothDevice bleDevice;
+
+            public ViewHolder(View itemView) {
+                super(itemView);
+                itemView.setOnClickListener(this);
+                deviceName = itemView.findViewById(R.id.device_name);
+                deviceAddress = itemView.findViewById(R.id.device_address);
+            }
+
+            @Override
+            public void onClick(View view) {
+                connectToDevice(bleDevice);
+            }
+        }
+
+        private final ArrayList<BluetoothDevice> mLeDevices;
+        private final LayoutInflater mInflater;
+
+        public LeDeviceListAdapter(ArrayList<BluetoothDevice> leDevices) {
             super();
-            mLeDevices = new ArrayList<BluetoothDevice>();
-            mInflator = DeviceScanActivity.this.getLayoutInflater();
+            mLeDevices = leDevices;
+            mInflater = DeviceScanActivity.this.getLayoutInflater();
         }
 
-        public void addDevice(BluetoothDevice device) {
-            if (!mLeDevices.contains(device)) {
-                mLeDevices.add(device);
-            }
-        }
 
-        public BluetoothDevice getDevice(int position) {
-            return mLeDevices.get(position);
-        }
+        @Override
+        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            View view = mInflater.inflate(R.layout.listitem_device, parent, false);
 
-        public void clear() {
-            mLeDevices.clear();
+            return new ViewHolder(view);
         }
 
         @Override
-        public int getCount() {
-            return mLeDevices.size();
-        }
+        public void onBindViewHolder(LeDeviceListAdapter.ViewHolder holder, int position) {
+            // Get the data model based on position
+            BluetoothDevice device = mLeDevices.get(position);
 
-        @Override
-        public Object getItem(int i) {
-            return mLeDevices.get(i);
-        }
-
-        @Override
-        public long getItemId(int i) {
-            return i;
-        }
-
-        @Override
-        public View getView(int i, View view, ViewGroup viewGroup) {
-            ViewHolder viewHolder;
-            // General ListView optimization code.
-            if (view == null) {
-                view = mInflator.inflate(R.layout.listitem_device, null);
-                viewHolder = new ViewHolder();
-                viewHolder.deviceAddress = (TextView) view.findViewById(R.id.device_address);
-                viewHolder.deviceName = (TextView) view.findViewById(R.id.device_name);
-                view.setTag(viewHolder);
-            } else {
-                viewHolder = (ViewHolder) view.getTag();
-            }
-
-            BluetoothDevice device = mLeDevices.get(i);
             final String deviceName = device.getName();
-            if (deviceName != null && deviceName.length() > 0)
-                viewHolder.deviceName.setText(deviceName);
-            else
-                viewHolder.deviceName.setText(R.string.unknown_device);
-            viewHolder.deviceAddress.setText(device.getAddress());
+            if (deviceName != null && deviceName.length() > 0) {
+                holder.deviceName.setText(deviceName);
+            } else {
+                holder.deviceName.setText(R.string.unknown_device);
+            }
 
-            return view;
+            holder.bleDevice = device;
+            holder.deviceAddress.setText(device.getAddress());
+        }
+
+        @Override
+        public int getItemCount() {
+            return mLeDevices.size();
         }
     }
 
@@ -256,7 +244,7 @@ public class DeviceScanActivity extends ListActivity {
             String name = device.getName();
             Log.d(TAG, "address: " + device.getAddress() + "name: " + name);
 
-            String addressToConnect = AppPreferences.getDeviceAddress( DeviceScanActivity.this);
+            String addressToConnect = AppPreferences.getDeviceAddress(DeviceScanActivity.this);
 
             if (addressToConnect != null) {
                 if (device.getAddress().equals(addressToConnect)) {
@@ -266,17 +254,12 @@ public class DeviceScanActivity extends ListActivity {
             }
 
             if (name != null && name.contains("CORE")) {
-                mLeDeviceListAdapter.addDevice(device);
+                mDeviceList.add(device);
+                mDeviceListAdapter.notifyItemInserted(mDeviceList.size() - 1);
 
                 // LOG message MOT
                 Log.d("deviceScanActivity", "adding a device");
-                mLeDeviceListAdapter.notifyDataSetChanged();
             }
         }
     };
-
-    static class ViewHolder {
-        TextView deviceName;
-        TextView deviceAddress;
-    }
 }
