@@ -31,6 +31,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -91,10 +92,13 @@ public class DeviceControlActivity extends Activity {
             if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
                 updateConnectionState(R.string.connected);
                 invalidateOptionsMenu();
+                Toast.makeText(context, R.string.connected, Toast.LENGTH_SHORT ).show();
+
             } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
                 updateConnectionState(R.string.disconnected);
                 invalidateOptionsMenu();
                 clearUI();
+                Toast.makeText(context, R.string.disconnected, Toast.LENGTH_SHORT ).show();
             } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
                 // Show all the supported services and characteristics on the user interface.
                 listGattServices(mBluetoothLeService.getSupportedGattServices());

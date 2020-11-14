@@ -66,7 +66,7 @@ public class DeviceScanActivity extends Activity {
 
     private void setScanning(boolean enabled) {
         mScanning = enabled;
-        if (enabled) {
+        if (enabled && mDeviceListAdapter.getItemCount() == 0) {
             mProgressBar.setVisibility(View.VISIBLE);
         } else {
             mProgressBar.setVisibility(View.INVISIBLE);
@@ -199,7 +199,6 @@ public class DeviceScanActivity extends Activity {
             mInflater = DeviceScanActivity.this.getLayoutInflater();
         }
 
-
         @Override
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View view = mInflater.inflate(R.layout.listitem_device, parent, false);
@@ -249,7 +248,7 @@ public class DeviceScanActivity extends Activity {
             if (name != null && name.contains("CORE")) {
                 mDeviceList.add(device);
                 mDeviceListAdapter.notifyItemInserted(mDeviceList.size() - 1);
-
+                mProgressBar.setVisibility(View.INVISIBLE);
                 // LOG message MOT
                 Log.d("deviceScanActivity", "adding a device");
             }
