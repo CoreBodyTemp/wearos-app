@@ -17,7 +17,6 @@
 package com.greenteg.core_wearos;
 
 import android.app.Activity;
-import android.app.ListActivity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
@@ -30,27 +29,21 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
-import static android.bluetooth.le.ScanSettings.SCAN_MODE_LOW_LATENCY;
+import static android.bluetooth.le.ScanSettings.SCAN_MODE_BALANCED;
 
 public class DeviceScanActivity extends Activity {
     private static final String TAG = "DeviceScanActivity";
@@ -149,7 +142,7 @@ public class DeviceScanActivity extends Activity {
 
     private void scanLeDevice(final boolean enable) {
         if (enable) {
-            mSettings = new ScanSettings.Builder().setScanMode(SCAN_MODE_LOW_LATENCY).build();  //default settings
+            mSettings = new ScanSettings.Builder().setScanMode(SCAN_MODE_BALANCED).build();  //default settings
 
             setScanning(true);
             Log.d("deviceScanActivity", "scanLeDevice: startLeScan.");
