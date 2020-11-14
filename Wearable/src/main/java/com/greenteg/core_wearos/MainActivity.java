@@ -267,10 +267,6 @@ public class MainActivity<REQUEST_ENABLE_BT> extends FragmentActivity
         registerReceiver(mAmbientUpdateBroadcastReceiver, filter);
 
         refreshDisplayAndSetNextUpdate();
-
-        /*// Initializes list view adapter.
-        mLeDeviceListAdapter = new LeDeviceListAdapter();
-        scanLeDevice();*/
     }
 
     @Override
