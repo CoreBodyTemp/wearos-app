@@ -89,22 +89,30 @@ public class CoreBodyTemperatureActivity extends Activity {
         @Override
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
-            if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
-                updateConnectionState(R.string.connected);
-                invalidateOptionsMenu();
-                Toast.makeText(context, R.string.connected, Toast.LENGTH_SHORT ).show();
 
-            } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
-                updateConnectionState(R.string.disconnected);
-                invalidateOptionsMenu();
-                clearUI();
-                Toast.makeText(context, R.string.disconnected, Toast.LENGTH_SHORT ).show();
-            } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
-                // Show all the supported services and characteristics on the user interface.
-                listGattServices(mBluetoothLeService.getSupportedGattServices());
-            } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
-                String data = intent.getStringExtra(BluetoothLeService.EXTRA_DATA);
-                displayData(data);
+            switch (action) {
+                case BluetoothLeService.ACTION_GATT_CONNECTED: {
+                    updateConnectionState(R.string.connected);
+                    invalidateOptionsMenu();
+                    Toast.makeText(context, R.string.connected, Toast.LENGTH_SHORT).show();
+                }
+                break;
+                case BluetoothLeService.ACTION_GATT_DISCONNECTED: {
+                    updateConnectionState(R.string.disconnected);
+                    invalidateOptionsMenu();
+                    clearUI();
+                    Toast.makeText(context, R.string.disconnected, Toast.LENGTH_SHORT).show();
+                }
+                break;
+                case BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED: {
+                    listGattServices(mBluetoothLeService.getSupportedGattServices());
+                }
+                break;
+                case BluetoothLeService.ACTION_TEMPERATURE_AVAILABLE: {
+                    double temperature = intent.getDoubleExtra(BluetoothLeService.EXTRA_TEMPERATURE_VALUE, 0);
+                    displayTemperature(temperature);
+
+                }
             }
         }
     };
@@ -200,12 +208,9 @@ public class CoreBodyTemperatureActivity extends Activity {
         });
     }
 
-    private void displayData(String data) {
-        if (data != null) {
-            // instead of writing to the data field of the gattattributes listadapter, we write to
-            // the field. TODO: no support to detect unit (°C or F) yet. assumes °C
-            mDataField.setText(data + "°C");
-            Log.d(TAG, "received data: " + data);
+    private void displayTemperature(double temperature) {
+        if (temperature != 0) {
+            mDataField.setText(String.format("%.2f %s", temperature, "°C"));
         }
     }
 
@@ -282,7 +287,7 @@ public class CoreBodyTemperatureActivity extends Activity {
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_CONNECTED);
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED);
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
-        intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
+        intentFilter.addAction(BluetoothLeService.ACTION_TEMPERATURE_AVAILABLE);
         return intentFilter;
     }
 }

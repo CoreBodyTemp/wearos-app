@@ -55,10 +55,12 @@ public class BluetoothLeService extends Service {
             "com.example.bluetooth.le.ACTION_GATT_DISCONNECTED";
     public final static String ACTION_GATT_SERVICES_DISCOVERED =
             "com.example.bluetooth.le.ACTION_GATT_SERVICES_DISCOVERED";
+    public final static String ACTION_TEMPERATURE_AVAILABLE =
+            "com.example.bluetooth.le.ACTION_TEMPERATURE_AVAILABLE";
+    public final static String EXTRA_TEMPERATURE_VALUE =
+            "com.example.bluetooth.le.EXTRA_TEMPERATURE_VALUE";
     public final static String ACTION_DATA_AVAILABLE =
             "com.example.bluetooth.le.ACTION_DATA_AVAILABLE";
-    public final static String EXTRA_DATA =
-            "com.example.bluetooth.le.EXTRA_DATA";
 
     public final static UUID UUID_TEMPERATURE_MEASUREMENT =
             UUID.fromString(SampleGattAttributes.TEMPERATURE_MEASUREMENT);
@@ -114,26 +116,21 @@ public class BluetoothLeService extends Service {
 
     private void broadcastUpdate(final String action,
                                  final BluetoothGattCharacteristic characteristic) {
-        final Intent intent = new Intent(action);
+        Intent intent;
 
         if (UUID_TEMPERATURE_MEASUREMENT.equals(characteristic.getUuid())) {
+            intent = new Intent(ACTION_TEMPERATURE_AVAILABLE);
             final double temperature = TemperatureReading.fromCharacteristic(characteristic);
-            intent.putExtra(EXTRA_DATA, String.valueOf(temperature));
+            intent.putExtra(EXTRA_TEMPERATURE_VALUE, temperature);
         } else {
-            // For all other profiles, writes the data formatted in HEX.
-            final byte[] data = characteristic.getValue();
-            if (data != null && data.length > 0) {
-                final StringBuilder stringBuilder = new StringBuilder(data.length);
-                for(byte byteChar : data)
-                    stringBuilder.append(String.format("%02X ", byteChar));
-                intent.putExtra(EXTRA_DATA, new String(data) + "\n" + stringBuilder.toString());
-            }
+            intent = new Intent(action);
         }
+
         sendBroadcast(intent);
     }
 
     public class LocalBinder extends Binder {
-        BluetoothLeService getService() {
+        public BluetoothLeService getService() {
             return BluetoothLeService.this;
         }
     }
