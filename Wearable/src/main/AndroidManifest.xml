@@ -56,7 +56,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.greenteg.core_wearos.DeviceControlActivity"/>
+        <activity android:name="com.greenteg.core_wearos.CoreBodyTemperatureActivity"/>
         <activity android:name="com.greenteg.core_wearos.DeviceScanActivity"/>
         <service android:name="com.greenteg.core_wearos.BluetoothLeService" android:enabled="true"/>
     </application>

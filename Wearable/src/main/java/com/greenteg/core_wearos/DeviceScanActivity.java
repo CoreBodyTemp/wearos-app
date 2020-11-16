@@ -155,9 +155,9 @@ public class DeviceScanActivity extends Activity {
     }
 
     private void connectToDevice(BluetoothDevice device) {
-        final Intent intent = new Intent(this, DeviceControlActivity.class);
-        intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_NAME, device.getName());
-        intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_ADDRESS, device.getAddress());
+        final Intent intent = new Intent(this, CoreBodyTemperatureActivity.class);
+        intent.putExtra(CoreBodyTemperatureActivity.EXTRAS_DEVICE_NAME, device.getName());
+        intent.putExtra(CoreBodyTemperatureActivity.EXTRAS_DEVICE_ADDRESS, device.getAddress());
 
         AppPreferences.saveDevice(this, device);
 

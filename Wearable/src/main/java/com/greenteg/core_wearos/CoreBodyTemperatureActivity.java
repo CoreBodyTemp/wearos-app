@@ -37,10 +37,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import static com.greenteg.core_wearos.R.layout.core_body_temperature;
+import static com.greenteg.core_wearos.R.layout.activity_core_body_temperature;
 
-public class DeviceControlActivity extends Activity {
-    private final static String TAG = DeviceControlActivity.class.getSimpleName();
+public class CoreBodyTemperatureActivity extends Activity {
+    private final static String TAG = CoreBodyTemperatureActivity.class.getSimpleName();
 
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
@@ -151,7 +151,7 @@ public class DeviceControlActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(core_body_temperature); // we display only the CBT in this version!
+        setContentView(activity_core_body_temperature); // we display only the CBT in this version!
 
         final Intent intent = getIntent();
         mDeviceAddress = intent.getStringExtra(EXTRAS_DEVICE_ADDRESS);
