@@ -267,6 +267,7 @@ public class MainActivity<REQUEST_ENABLE_BT> extends FragmentActivity
         registerReceiver(mAmbientUpdateBroadcastReceiver, filter);
 
         refreshDisplayAndSetNextUpdate();
+        connectToSavedDevice();
     }
 
     @Override
@@ -322,13 +323,6 @@ public class MainActivity<REQUEST_ENABLE_BT> extends FragmentActivity
 
         mDrawCount += 1;
         long currentTimeMs = System.currentTimeMillis();
-        Log.d(
-                TAG,
-                "loadDataAndUpdateScreen(): "
-                        + currentTimeMs
-                        + "("
-                        + mAmbientController.isAmbient()
-                        + ")");
 
         mTimeTextView.setText(sDateFormat.format(new Date()));
         if (mAmbientController.isAmbient()) {
