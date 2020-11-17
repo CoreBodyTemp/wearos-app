@@ -25,6 +25,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -32,6 +33,8 @@ import android.view.View;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.greenteg.core_wearos.models.TemperatureReading;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,6 +48,8 @@ public class CoreBodyTemperatureActivity extends Activity {
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
 
+
+    private double mTemperature;
     private TextView mConnectionState;
     private TextView mDataField;
     private String mDeviceAddress;
@@ -93,6 +98,8 @@ public class CoreBodyTemperatureActivity extends Activity {
                     invalidateOptionsMenu();
                     clearUI();
                     Toast.makeText(context, R.string.disconnected, Toast.LENGTH_SHORT).show();
+                    mTemperature = 0;
+                    displayTemperature();
                 }
                 break;
                 case BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED: {
@@ -100,8 +107,8 @@ public class CoreBodyTemperatureActivity extends Activity {
                 }
                 break;
                 case BluetoothLeService.ACTION_TEMPERATURE_AVAILABLE: {
-                    double temperature = intent.getDoubleExtra(BluetoothLeService.EXTRA_TEMPERATURE_VALUE, 0);
-                    displayTemperature(temperature);
+                    mTemperature = intent.getDoubleExtra(BluetoothLeService.EXTRA_TEMPERATURE_VALUE, 0);
+                    displayTemperature();
 
                 }
             }
@@ -125,11 +132,19 @@ public class CoreBodyTemperatureActivity extends Activity {
         mConnectionState = (TextView) findViewById(R.id.connection_state);
         mDataField = (TextView) findViewById(R.id.current_CBT);
 
+        mDataField.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+                toggleTemperatureUnits();
+            }
+        });
         //getActionBar().setTitle(mDeviceName);
         //getActionBar().setDisplayHomeAsUpEnabled(true);
         Log.d(TAG, "start BluetoothLeService Intent next.");
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
+        mTemperature = 0;
     }
 
     @Override
@@ -159,9 +174,24 @@ public class CoreBodyTemperatureActivity extends Activity {
         mConnectionState.setText(resourceId);
     }
 
-    private void displayTemperature(double temperature) {
-        if (temperature != 0) {
-            mDataField.setText(String.format("%.2f %s", temperature, "°C"));
+    private void displayTemperature() {
+        if (mTemperature != 0) {
+            String value;
+
+            switch (AppPreferences.getTemperatureUnit(this)) {
+                case CELCIUS:
+                    value = String.format("%.2f %s", mTemperature, "°C");
+                    break;
+                case FAHRENHEIT:
+                    value = String.format("%.2f %s", TemperatureReading.celsiusToFahrenheit(mTemperature), "°F");
+                    break;
+                default:
+                    throw new RuntimeException("Unknown temperature unit");
+            }
+
+            mDataField.setText(value);
+        } else {
+            mDataField.setText(R.string.no_data);
         }
     }
 
@@ -231,6 +261,21 @@ public class CoreBodyTemperatureActivity extends Activity {
     public void disconnectClicked(View view) {
         AppPreferences.removeDevice(this);
         finish();
+    }
+
+    private void toggleTemperatureUnits() {
+        switch (AppPreferences.getTemperatureUnit(this)) {
+            case CELCIUS:
+                AppPreferences.saveTemperatureUnit(this, AppPreferences.TemperatureUnit.FAHRENHEIT);
+                break;
+            case FAHRENHEIT:
+                AppPreferences.saveTemperatureUnit(this, AppPreferences.TemperatureUnit.CELCIUS);
+                break;
+            default:
+                throw new RuntimeException("Unknown temperature unit");
+        }
+
+        displayTemperature();
     }
 
     private static IntentFilter makeGattUpdateIntentFilter() {
