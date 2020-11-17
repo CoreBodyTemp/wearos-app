@@ -79,6 +79,7 @@ public class BluetoothLeService extends Service {
 
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 intentAction = ACTION_GATT_DISCONNECTED;
+                AppPreferences.setLastCbtValue(BluetoothLeService.this, 0);
                 Log.i(TAG, "Disconnected from GATT server.");
                 broadcastUpdate(intentAction);
             }

@@ -22,11 +22,13 @@ public class CbtComplicationProviderService extends android.support.wearable.com
         Log.d(TAG, "onComplicationUpdate() id: " + complicationId);
 
         float lastCbtValue = AppPreferences.getLastCbtValue(CbtComplicationProviderService.this);
+        Log.d(TAG, "last: " + lastCbtValue + " oldlast: " + oldLastCbtValue);
 
         ComplicationData complicationData = null;
 
-        if(lastCbtValue!=oldLastCbtValue){
+        if(true){  //if(lastCbtValue!=oldLastCbtValue)
             // we need to update
+            oldLastCbtValue = lastCbtValue;
             Log.d(TAG, "lastCbtValue: " + lastCbtValue);
 
             String value = new String();

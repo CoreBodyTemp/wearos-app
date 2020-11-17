@@ -78,12 +78,12 @@ public class AppPreferences {
         return TemperatureUnit.getByCode(preferences.getString(TEMPERATURE_UNIT_PREFERENCE, defaultTemperature));
     }
 
-    public static void setLastCbtValue(Context context, float mCBT){
+    public static void setLastCbtValue(Context context, float lastCbtValue){
         SharedPreferences preferences = context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
-        editor.putFloat(LAST_CBT_VALUE, mCBT);
+        editor.putFloat(LAST_CBT_VALUE, lastCbtValue);
         editor.apply();
-        Log.d("apppref","set lastcbtvalue to "+mCBT);
+        Log.d("apppref","set lastcbtvalue to "+lastCbtValue);
     }
 
     public static float getLastCbtValue(Context context){
