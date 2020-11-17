@@ -48,5 +48,6 @@
     <string name="current_CBT">--</string>
     <string name="display_curr_CBT">Core Body Temperature</string>
     <string name="forget">Forget</string>
+    <string name="complications_provider_cbt_value">Core Body Temperature</string>
 
 </resources>

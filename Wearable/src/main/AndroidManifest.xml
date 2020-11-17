@@ -59,5 +59,20 @@
         <activity android:name="com.greenteg.core_wearos.CoreBodyTemperatureActivity"/>
         <activity android:name="com.greenteg.core_wearos.DeviceScanActivity"/>
         <service android:name="com.greenteg.core_wearos.BluetoothLeService" android:enabled="true" android:exported="false"/>
+        <service
+            android:name="com.greenteg.core_wearos.CbtComplicationProviderService"
+            android:icon="@drawable/icn_cbt_complications"
+            android:label="@string/complications_provider_cbt_value"
+            android:permission="com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER">
+            <intent-filter>
+                <action android:name="android.support.wearable.complications.ACTION_COMPLICATION_UPDATE_REQUEST"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.support.wearable.complications.SUPPORTED_TYPES"
+                android:value="LONG_TEXT,SHORT_TEXT"/>
+            <meta-data
+                android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
+                android:value="300"/> <!-- this is the minimum accepted value by the system-->
+        </service>
     </application>
 </manifest>

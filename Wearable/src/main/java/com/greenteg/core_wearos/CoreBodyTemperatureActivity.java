@@ -161,12 +161,15 @@ public class CoreBodyTemperatureActivity extends Activity {
     protected void onPause() {
         super.onPause();
         unregisterReceiver(mGattUpdateReceiver);
+        Log.d(TAG, "onPause() called");
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         unbindService(mServiceConnection);
+        // we will no longer get updates for CBT and it will soon be outdated, thus set it to 0
+        AppPreferences.setLastCbtValue(CoreBodyTemperatureActivity.this,0);
         mBluetoothLeService = null;
     }
 

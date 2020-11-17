@@ -3,13 +3,15 @@ package com.greenteg.core_wearos;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import java.util.Locale;
 
 public class AppPreferences {
 
-    private static final String PREFERENCES = "PREFERENCES";
+    public static final String PREFERENCES = "PREFERENCES";
     private static final String DEVICE_ADDRESS_PREFERENCE = "DEVICE_ADDRESS_PREFERENCE";
+    public static final String LAST_CBT_VALUE = "LAST_CBT_VALUE";
     private static final String TEMPERATURE_UNIT_PREFERENCE = "TEMPERATURE_UNIT_PREFERENCE";
 
     enum TemperatureUnit {
@@ -74,5 +76,18 @@ public class AppPreferences {
 
         SharedPreferences preferences = context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE);
         return TemperatureUnit.getByCode(preferences.getString(TEMPERATURE_UNIT_PREFERENCE, defaultTemperature));
+    }
+
+    public static void setLastCbtValue(Context context, float mCBT){
+        SharedPreferences preferences = context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putFloat(LAST_CBT_VALUE, mCBT);
+        editor.apply();
+        Log.d("apppref","set lastcbtvalue to "+mCBT);
+    }
+
+    public static float getLastCbtValue(Context context){
+        SharedPreferences preferences = context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE);
+        return preferences.getFloat(LAST_CBT_VALUE, 0);
     }
 }
