@@ -1,4 +1,4 @@
-package com.greenteg.core_wearos.models;
+package com.greenteg.core.wearos.models;
 
 import android.bluetooth.BluetoothGattCharacteristic;
 import java.util.Calendar;

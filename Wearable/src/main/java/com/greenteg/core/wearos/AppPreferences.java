@@ -1,4 +1,4 @@
-package com.greenteg.core_wearos;
+package com.greenteg.core.wearos;
 
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
@@ -17,7 +17,7 @@ public class AppPreferences {
     private static final String TEMPERATURE_UNIT_PREFERENCE = "TEMPERATURE_UNIT_PREFERENCE";
 
     enum TemperatureUnit {
-        CELCIUS("C"),
+        CELSIUS("C"),
         FAHRENHEIT("F");
 
         private final String mCode;
@@ -29,7 +29,7 @@ public class AppPreferences {
         public static TemperatureUnit getByCode(String code) {
             switch(code) {
                 case "C":
-                    return CELCIUS;
+                    return CELSIUS;
                 case "F":
                     return FAHRENHEIT;
                 default:

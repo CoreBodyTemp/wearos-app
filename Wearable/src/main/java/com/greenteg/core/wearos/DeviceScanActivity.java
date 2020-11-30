@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.greenteg.core_wearos;
+package com.greenteg.core.wearos;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;

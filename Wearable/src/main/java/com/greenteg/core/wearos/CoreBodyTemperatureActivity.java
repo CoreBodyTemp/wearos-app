@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.greenteg.core_wearos;
+package com.greenteg.core.wearos;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothGattCharacteristic;
@@ -25,22 +25,20 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
-import android.widget.ExpandableListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.greenteg.core_wearos.models.TemperatureReading;
+import com.greenteg.core.wearos.models.TemperatureReading;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import static com.greenteg.core_wearos.R.layout.activity_core_body_temperature;
+import static com.greenteg.core.wearos.R.layout.activity_core_body_temperature;
 
 public class CoreBodyTemperatureActivity extends Activity {
     private final static String TAG = CoreBodyTemperatureActivity.class.getSimpleName();
@@ -182,7 +180,7 @@ public class CoreBodyTemperatureActivity extends Activity {
             String value;
 
             switch (AppPreferences.getTemperatureUnit(this)) {
-                case CELCIUS:
+                case CELSIUS:
                     value = String.format("%.2f %s", mTemperature, "°C");
                     break;
                 case FAHRENHEIT:
@@ -268,11 +266,11 @@ public class CoreBodyTemperatureActivity extends Activity {
 
     private void toggleTemperatureUnits() {
         switch (AppPreferences.getTemperatureUnit(this)) {
-            case CELCIUS:
+            case CELSIUS:
                 AppPreferences.saveTemperatureUnit(this, AppPreferences.TemperatureUnit.FAHRENHEIT);
                 break;
             case FAHRENHEIT:
-                AppPreferences.saveTemperatureUnit(this, AppPreferences.TemperatureUnit.CELCIUS);
+                AppPreferences.saveTemperatureUnit(this, AppPreferences.TemperatureUnit.CELSIUS);
                 break;
             default:
                 throw new RuntimeException("Unknown temperature unit");

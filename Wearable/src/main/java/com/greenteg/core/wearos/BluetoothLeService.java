@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.greenteg.core_wearos;
+package com.greenteg.core.wearos;
 
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
@@ -32,7 +32,7 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
-import com.greenteg.core_wearos.models.TemperatureReading;
+import com.greenteg.core.wearos.models.TemperatureReading;
 
 import java.util.List;
 import java.util.UUID;

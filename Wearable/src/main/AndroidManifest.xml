@@ -14,7 +14,7 @@
      limitations under the License.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.greenteg.core_wearos">
+          package="com.greenteg.core.wearos">
 
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="com.android.alarm.permission.SET_ALARM"/>
@@ -46,7 +46,7 @@
             intent will open a new activity every time the Alarm is triggered rather than reusing
             the same (already active) Activity.
         -->
-        <activity android:name="com.greenteg.core_wearos.MainActivity"
+        <activity android:name=".MainActivity"
             android:label="@string/app_name"
             android:launchMode="singleInstance"
             android:configChanges="orientation|keyboardHidden"
@@ -56,11 +56,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.greenteg.core_wearos.CoreBodyTemperatureActivity"/>
-        <activity android:name="com.greenteg.core_wearos.DeviceScanActivity"/>
-        <service android:name="com.greenteg.core_wearos.BluetoothLeService" android:enabled="true" android:exported="false"/>
+        <activity android:name=".CoreBodyTemperatureActivity"/>
+        <activity android:name=".DeviceScanActivity"/>
+        <service android:name=".BluetoothLeService" android:enabled="true" android:exported="false"/>
         <service
-            android:name="com.greenteg.core_wearos.CbtComplicationProviderService"
+            android:name=".CbtComplicationProviderService"
             android:icon="@drawable/icn_preview192dpi"
             android:label="@string/complications_provider_cbt_value"
             android:permission="com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER">

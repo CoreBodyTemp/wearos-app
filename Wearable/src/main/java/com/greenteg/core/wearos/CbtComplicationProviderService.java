@@ -1,14 +1,12 @@
-package com.greenteg.core_wearos;
+package com.greenteg.core.wearos;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.graphics.drawable.Icon;
 import android.support.wearable.complications.ComplicationData;
 import android.support.wearable.complications.ComplicationManager;
 import android.support.wearable.complications.ComplicationText;
 import android.util.Log;
 
-import com.greenteg.core_wearos.models.TemperatureReading;
+import com.greenteg.core.wearos.models.TemperatureReading;
 
 
 public class CbtComplicationProviderService extends android.support.wearable.complications.ComplicationProviderService {
@@ -39,7 +37,7 @@ public class CbtComplicationProviderService extends android.support.wearable.com
                     }
                     else {
                         switch (AppPreferences.getTemperatureUnit(this)) {
-                            case CELCIUS:
+                            case CELSIUS:
                                 value = String.format("%.1f %s", lastCbtValue, "°C");
                                 break;
                             case FAHRENHEIT:
@@ -61,7 +59,7 @@ public class CbtComplicationProviderService extends android.support.wearable.com
                     }
                     else {
                         switch (AppPreferences.getTemperatureUnit(this)) {
-                            case CELCIUS:
+                            case CELSIUS:
                                 value = String.format("%.2f %s", lastCbtValue, "°C");
                                 break;
                             case FAHRENHEIT:
