@@ -61,7 +61,7 @@
         <service android:name="com.greenteg.core_wearos.BluetoothLeService" android:enabled="true" android:exported="false"/>
         <service
             android:name="com.greenteg.core_wearos.CbtComplicationProviderService"
-            android:icon="@drawable/icn_cbt_complications"
+            android:icon="@drawable/icn_preview192dpi"
             android:label="@string/complications_provider_cbt_value"
             android:permission="com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER">
             <intent-filter>

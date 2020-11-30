@@ -88,6 +88,6 @@ public class AppPreferences {
 
     public static float getLastCbtValue(Context context){
         SharedPreferences preferences = context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE);
-        return preferences.getFloat(LAST_CBT_VALUE, 0);
+        return preferences.getFloat(LAST_CBT_VALUE, 0.0f);
     }
 }
