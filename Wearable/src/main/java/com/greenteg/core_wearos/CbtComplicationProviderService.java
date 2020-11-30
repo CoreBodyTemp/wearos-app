@@ -13,7 +13,6 @@ import com.greenteg.core_wearos.models.TemperatureReading;
 
 public class CbtComplicationProviderService extends android.support.wearable.complications.ComplicationProviderService {
     private final static String TAG = CbtComplicationProviderService.class.getSimpleName();
-    private float oldLastCbtValue = 0;
 
     @Override
     public void onComplicationUpdate(
@@ -22,12 +21,15 @@ public class CbtComplicationProviderService extends android.support.wearable.com
         Log.d(TAG, "onComplicationUpdate() id: " + complicationId);
 
         float lastCbtValue = AppPreferences.getLastCbtValue(CbtComplicationProviderService.this);
+        float lastComplicationCbtValue = AppPreferences.getLastComplicationCbtValue(CbtComplicationProviderService.this);
+        Log.d(TAG, "last: " + lastCbtValue + " oldlast: " + lastComplicationCbtValue);
 
         ComplicationData complicationData = null;
 
-        if(lastCbtValue!=oldLastCbtValue){
+        if(lastCbtValue!=lastComplicationCbtValue){
             // we need to update
-            Log.d(TAG, "lastCbtValue: " + lastCbtValue);
+            AppPreferences.setLastComplicationValue(CbtComplicationProviderService.this, lastCbtValue);
+            Log.d(TAG, "updating lastCbtValue to: " + lastCbtValue);
 
             String value = new String();
             switch (dataType) {
