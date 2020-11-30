@@ -78,7 +78,7 @@ public class DeviceScanActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device_scan);
 
-        Log.d("deviceScanActivity", "onCreate()");
+        Log.d(TAG, "onCreate()");
         mProgressBar = findViewById(R.id.progress_bar);
 
         mDeviceListAdapter = new LeDeviceListAdapter(mDeviceList);
@@ -145,7 +145,7 @@ public class DeviceScanActivity extends Activity {
             mSettings = new ScanSettings.Builder().setScanMode(SCAN_MODE_BALANCED).build();  //default settings
 
             setScanning(true);
-            Log.d("deviceScanActivity", "scanLeDevice: startLeScan.");
+            Log.d(TAG, "scanLeDevice: startLeScan.");
             mBluetoothLeScanner.startScan(mFilters, mSettings, mScanCallback);
         } else {
             setScanning(false);
@@ -250,7 +250,7 @@ public class DeviceScanActivity extends Activity {
                 mDeviceListAdapter.notifyItemInserted(mDeviceList.size() - 1);
                 mProgressBar.setVisibility(View.INVISIBLE);
                 // LOG message MOT
-                Log.d("deviceScanActivity", "adding a device");
+                Log.d(TAG, "adding a device");
             }
         }
     };
