@@ -50,4 +50,7 @@
     <string name="forget">Forget</string>
     <string name="complications_provider_cbt_value">Core Body Temperature</string>
 
+    <!--Dimensions-->
+    <dimen name="list_item_height">50dp</dimen>
+
 </resources>
