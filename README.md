@@ -1,5 +1,9 @@
 # CoreWearOS
 
+# How to prepare your watch to debug apps from AndroidStudio
+You have to enable the developer mode on your watch([explained here](https://developer.android.com/training/wearables/apps/debugging)).
+
+
 # How to get started
 
 1. Download latest version of [AndroidStudio](https://developer.android.com/studio?gclid=CjwKCAiA-_L9BRBQEiwA-bm5fgngJrqeA-ZMr0p1ZHucPuT18LjNNtI1UeSWD-3fwrI-lFoIe0NtxBoCRjkQAvD_BwE&gclsrc=aw.ds)
