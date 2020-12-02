@@ -50,6 +50,7 @@ public class CbtComplicationProviderService extends android.support.wearable.com
                     complicationData =
                             new ComplicationData.Builder(ComplicationData.TYPE_SHORT_TEXT)
                                     .setShortText(ComplicationText.plainText(value))
+                                    .setIcon(Icon.createWithResource(this, R.drawable.icn_cbt_complication))
                                     .build();
 
                     break;
@@ -72,7 +73,7 @@ public class CbtComplicationProviderService extends android.support.wearable.com
                     complicationData =
                             new ComplicationData.Builder(ComplicationData.TYPE_LONG_TEXT)
                                     .setLongText(ComplicationText.plainText(value))
-                                    .setIcon(Icon.createWithResource(this, R.drawable.icn_cbt_complications))
+                                    .setIcon(Icon.createWithResource(this, R.drawable.icn_cbt_complication))
                                     .build();
                     break;
                 default:

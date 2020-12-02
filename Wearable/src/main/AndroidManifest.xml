@@ -66,7 +66,7 @@
         <service android:name=".BluetoothLeService" android:enabled="true" android:exported="false"/>
         <service
             android:name=".CbtComplicationProviderService"
-            android:icon="@drawable/icn_preview192dpi"
+            android:icon="@drawable/icn_cbt_complication"
             android:label="@string/complications_provider_cbt_value"
             android:permission="com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER">
             <intent-filter>
