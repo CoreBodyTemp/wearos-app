@@ -246,11 +246,15 @@ public class DeviceScanActivity extends Activity {
             }
 
             if (name != null && name.contains("CORE")) {
-                mDeviceList.add(device);
-                mDeviceListAdapter.notifyItemInserted(mDeviceList.size() - 1);
-                mProgressBar.setVisibility(View.INVISIBLE);
-                // LOG message MOT
-                Log.d(TAG, "adding a device");
+                if (!mDeviceList.contains(device)) {
+                    mDeviceList.add(device);
+                    mDeviceListAdapter.notifyItemInserted(mDeviceList.size() - 1);
+                    mProgressBar.setVisibility(View.INVISIBLE);
+                    // LOG message MOT
+                    Log.d(TAG, "adding a device");
+                } else {
+                    Log.d(TAG, "device" + device.getAddress() + " already in list.");
+                }
             }
         }
     };
