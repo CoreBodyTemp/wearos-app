@@ -17,16 +17,18 @@
 package com.greenteg.core.wearos;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
@@ -47,6 +49,8 @@ public class CoreBodyTemperatureActivity extends Activity {
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
 
+    private static final int REQUEST_DISCONNECTION = 1;
+
 
     private double mTemperature;
     private TextView mConnectionState;
@@ -59,9 +63,6 @@ public class CoreBodyTemperatureActivity extends Activity {
 
     private final String LIST_NAME = "NAME";
     private final String LIST_UUID = "UUID";
-
-    boolean doubleBackToExitPressedOnce = false;
-
 
     // Code to manage Service lifecycle.
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -264,24 +265,24 @@ public class CoreBodyTemperatureActivity extends Activity {
     }
 
     public void disconnectClicked(View view) {
-        if (doubleBackToExitPressedOnce) {
-            CoreBodyTemperatureActivity.this.disconnectConfirmed(view);
-            return;
-        }
-
-        this.doubleBackToExitPressedOnce = true;
-        Toast.makeText(this, R.string.confirm_forget, Toast.LENGTH_SHORT).show();
-
-        new Handler().postDelayed(new Runnable() {
-
-            @Override
-            public void run() {
-                doubleBackToExitPressedOnce=false;
-            }
-        }, 2000);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.confirm_forget_clicked)
+                .setCancelable(false)
+                .setPositiveButton(R.string.confirm_forget_clicked_yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        CoreBodyTemperatureActivity.this.disconnectConfirmed();
+                    }
+                })
+                .setNegativeButton(R.string.confirm_forget_clicked_no, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.show();
     }
 
-    public void disconnectConfirmed(View view) {
+    private void disconnectConfirmed() {
         AppPreferences.removeDevice(this);
         finish();
     }
