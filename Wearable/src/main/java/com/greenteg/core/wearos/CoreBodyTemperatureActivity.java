@@ -26,6 +26,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
@@ -58,6 +59,9 @@ public class CoreBodyTemperatureActivity extends Activity {
 
     private final String LIST_NAME = "NAME";
     private final String LIST_UUID = "UUID";
+
+    boolean doubleBackToExitPressedOnce = false;
+
 
     // Code to manage Service lifecycle.
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -260,6 +264,24 @@ public class CoreBodyTemperatureActivity extends Activity {
     }
 
     public void disconnectClicked(View view) {
+        if (doubleBackToExitPressedOnce) {
+            CoreBodyTemperatureActivity.this.disconnectConfirmed(view);
+            return;
+        }
+
+        this.doubleBackToExitPressedOnce = true;
+        Toast.makeText(this, R.string.confirm_forget, Toast.LENGTH_SHORT).show();
+
+        new Handler().postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+                doubleBackToExitPressedOnce=false;
+            }
+        }, 2000);
+    }
+
+    public void disconnectConfirmed(View view) {
         AppPreferences.removeDevice(this);
         finish();
     }
