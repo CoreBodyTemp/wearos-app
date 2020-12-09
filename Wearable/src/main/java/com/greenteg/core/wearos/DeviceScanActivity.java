@@ -29,6 +29,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -40,6 +42,7 @@ import android.widget.Toast;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,6 +59,14 @@ public class DeviceScanActivity extends Activity {
     private ScanSettings mSettings;
     private ProgressBar mProgressBar;
 
+    private final Handler mScanningTimeout = new scanningTimeoutHandler(this);
+    /**
+     * Custom 'what' for Message sent to Handler.
+     */
+    private static final int MSG_SCANNING_TIMEOUT = 0;
+    private static final int scanningTimeout_Ms = 10000;
+
+
 
     private boolean mScanning;
 
@@ -71,6 +82,14 @@ public class DeviceScanActivity extends Activity {
         } else {
             mProgressBar.setVisibility(View.INVISIBLE);
         }
+    }
+
+    private void displayScanningTimeout() {
+        Log.d(TAG, "displayScanningTimeout()");
+        scanLeDevice(false);
+        Toast.makeText(this, R.string.scanning_timed_out, Toast.LENGTH_LONG).show();
+        Intent intent = new Intent(DeviceScanActivity.this, MainActivity.class);
+        startActivity(intent);
     }
 
     @Override
@@ -147,6 +166,9 @@ public class DeviceScanActivity extends Activity {
             setScanning(true);
             Log.d(TAG, "scanLeDevice: startLeScan.");
             mBluetoothLeScanner.startScan(mFilters, mSettings, mScanCallback);
+
+            mScanningTimeout.sendEmptyMessageDelayed(MSG_SCANNING_TIMEOUT, scanningTimeout_Ms);
+
         } else {
             setScanning(false);
             mBluetoothLeScanner.stopScan(mScanCallback);
@@ -257,5 +279,36 @@ public class DeviceScanActivity extends Activity {
                 }
             }
         }
+
+        @Override
+        public void onScanFailed(int errorCode) {
+            super.onScanFailed(errorCode);
+            Log.d(TAG, "onScanFailed() errorCode: "+ errorCode);
+        };
     };
+
+    /**
+     * Handler separated into static class to avoid memory leaks.
+     */
+    private static class scanningTimeoutHandler extends Handler {
+        private final WeakReference<DeviceScanActivity> mDeviceScanActivityWeakReference;
+
+        scanningTimeoutHandler(DeviceScanActivity reference) {
+            mDeviceScanActivityWeakReference = new WeakReference<>(reference);
+        }
+
+        @Override
+        public void handleMessage(Message message) {
+            DeviceScanActivity deviceScanActivity = mDeviceScanActivityWeakReference.get();
+
+            if (deviceScanActivity != null) {
+                if (message.what == MSG_SCANNING_TIMEOUT) {
+                    if (deviceScanActivity.mDeviceListAdapter.getItemCount() == 0) {
+                        deviceScanActivity.displayScanningTimeout();
+                    }
+                }
+            }
+        }
+    }
+
 }

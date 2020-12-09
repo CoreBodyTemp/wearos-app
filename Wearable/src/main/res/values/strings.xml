@@ -22,6 +22,9 @@
         To keep the bluetooth connection up, this will require access to location services,
         also in the background.</string>
     <string name="location_permission_rationale_no_show"></string>
+    <string name="scanning_timed_out">No CORE devices found. Press Button to restart.
+        Please make sure Bluetooth is not restricted on your device
+        (no battery saving settings).</string>
 
     <!-- for BLE related modules: -->
     <string name="ble_not_supported">BLE is not supported</string>
