@@ -62,4 +62,16 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <ProgressBar
+        android:id="@+id/progress_bar_core_body_temperature_activity"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:indeterminate="true"
+        app:layout_constraintBottom_toBottomOf="@+id/current_CBT"
+        app:layout_constraintEnd_toEndOf="@+id/current_CBT"
+        app:layout_constraintStart_toStartOf="@+id/current_CBT"
+        app:layout_constraintTop_toTopOf="@+id/current_CBT"
+        tools:showIn="@layout/activity_device_scan" />
 </androidx.constraintlayout.widget.ConstraintLayout>

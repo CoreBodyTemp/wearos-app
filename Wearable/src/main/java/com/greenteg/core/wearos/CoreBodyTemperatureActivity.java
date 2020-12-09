@@ -29,6 +29,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -59,6 +60,8 @@ public class CoreBodyTemperatureActivity extends Activity {
     private final String LIST_NAME = "NAME";
     private final String LIST_UUID = "UUID";
 
+    private ProgressBar mProgressBar;
+
     // Code to manage Service lifecycle.
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
 
@@ -87,8 +90,10 @@ public class CoreBodyTemperatureActivity extends Activity {
             switch (action) {
                 case BluetoothLeService.ACTION_GATT_CONNECTED: {
                     updateConnectionState(R.string.connected);
+                    setConnecting(false);
                     invalidateOptionsMenu();
                     Toast.makeText(context, R.string.connected, Toast.LENGTH_SHORT).show();
+                    displayTemperature();
                 }
                 break;
                 case BluetoothLeService.ACTION_GATT_DISCONNECTED: {
@@ -113,6 +118,14 @@ public class CoreBodyTemperatureActivity extends Activity {
         }
     };
 
+    private void setConnecting(boolean enabled) {
+        if (enabled) {
+            mProgressBar.setVisibility(View.VISIBLE);
+        } else {
+            mProgressBar.setVisibility(View.INVISIBLE);
+        }
+    }
+
     private void clearUI() {
         mDataField.setText(R.string.no_data);
     }
@@ -121,6 +134,7 @@ public class CoreBodyTemperatureActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(activity_core_body_temperature); // we display only the CBT in this version!
+        mProgressBar = findViewById(R.id.progress_bar_core_body_temperature_activity);
 
         final Intent intent = getIntent();
         mDeviceAddress = intent.getStringExtra(EXTRAS_DEVICE_ADDRESS);
@@ -143,6 +157,7 @@ public class CoreBodyTemperatureActivity extends Activity {
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
         mTemperature = 0;
+        setConnecting(true);
     }
 
     @Override
