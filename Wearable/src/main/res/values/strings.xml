@@ -17,6 +17,11 @@
     <string name="app_name">CORE</string>
     <!-- for Welcome Screen Main Activity-->
     <string name="location_permission_denied">Scanning for BLE devices like CORE needs location permission.</string>
+    <string name="location_permission_rationale">
+        Tap below to start scanning for CORE.
+        To keep the bluetooth connection up, this will require access to location services,
+        also in the background.</string>
+    <string name="location_permission_rationale_no_show"></string>
 
     <!-- for BLE related modules: -->
     <string name="ble_not_supported">BLE is not supported</string>

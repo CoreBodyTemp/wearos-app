@@ -17,17 +17,9 @@ package com.greenteg.core.wearos;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
@@ -36,13 +28,6 @@ import android.widget.Toast;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
-import androidx.wear.ambient.AmbientModeSupport;
-
-import java.lang.ref.WeakReference;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 
 /**
  * IMPORTANT NOTE: Most apps shouldn't use always on ambient mode, as it drains battery life. Unless
@@ -90,14 +75,14 @@ public class MainActivity<REQUEST_ENABLE_BT> extends FragmentActivity {
     //for permission request and turn-on-bluetooth request
     private final int REQUEST_LOCATION_PERMISSION = 1;
     private static final int REQUEST_ENABLE_BT = 1;
+    private TextView mRationaleTextView;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate()");
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
-
+        mRationaleTextView = findViewById(R.id.textview_permission_rationale);
     }
 
     public void startScanButtonClicked(View view) {
@@ -139,6 +124,14 @@ public class MainActivity<REQUEST_ENABLE_BT> extends FragmentActivity {
     public void onResume() {
         Log.d(TAG, "onResume()");
         super.onResume();
+        if (ActivityCompat.checkSelfPermission(
+                this, Manifest.permission.ACCESS_FINE_LOCATION) ==
+                PackageManager.PERMISSION_GRANTED) {
+            mRationaleTextView.setText(R.string.location_permission_rationale_no_show);
+        } else {
+            mRationaleTextView.setText(R.string.location_permission_rationale);
+        }
+
         connectToSavedDevice();
     }
 
