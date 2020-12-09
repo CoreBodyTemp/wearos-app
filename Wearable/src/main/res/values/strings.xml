@@ -15,12 +15,8 @@
 -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name">CORE</string>
-    <!-- timestamp field misused to display text-->
-    <string name="timestamp_label">Timestamp: %1$s</string>
-    <string name="mode_active_label">Active Mode (Handler)</string>
-    <string name="mode_ambient_label">Ambient Mode (Alarm)</string>
-    <string name="update_rate_label">Update rate: %1$d sec</string>
-    <string name="draw_count_label">Draw count: %1$d</string>
+    <!-- for Welcome Screen Main Activity-->
+    <string name="location_permission_denied">Scanning for BLE devices like CORE needs location permission.</string>
 
     <!-- for BLE related modules: -->
     <string name="ble_not_supported">BLE is not supported</string>
@@ -42,7 +38,7 @@
     <string name="menu_disconnect">Disconnect</string>
     <string name="menu_scan">Scan</string>
     <string name="menu_stop">Stop</string>
-    <string name="start_scan">Start Scan</string>
+    <string name="start_scan">Scan for CORE</string>
 
     <!--CBT related constants-->
     <string name="current_CBT">--</string>
