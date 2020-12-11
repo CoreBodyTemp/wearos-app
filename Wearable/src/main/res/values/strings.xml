@@ -17,6 +17,10 @@
     <string name="app_name">CORE</string>
     <!-- for Welcome Screen Main Activity-->
     <string name="location_permission_denied">Scanning for BLE devices like CORE needs location permission.</string>
+    <string name="location_dialogue_positive">OK</string>
+    <string name="location_dialogue_negative">Cancel</string>
+    <string name="location_permission_denied_for_good">Go to app settings to grant location service permission</string>
+
     <string name="location_permission_rationale">
         Tao below to scan for CORE.
         To sustain a connection, the app requires access to your location in the background.</string>
