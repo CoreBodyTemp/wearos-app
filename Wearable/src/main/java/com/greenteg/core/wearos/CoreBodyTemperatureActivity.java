@@ -17,11 +17,14 @@
 package com.greenteg.core.wearos;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
@@ -46,6 +49,8 @@ public class CoreBodyTemperatureActivity extends Activity {
 
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
+
+    private static final int REQUEST_DISCONNECTION = 1;
 
 
     private double mTemperature;
@@ -276,6 +281,24 @@ public class CoreBodyTemperatureActivity extends Activity {
     }
 
     public void disconnectClicked(View view) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.confirm_forget_clicked)
+                .setCancelable(false)
+                .setPositiveButton(R.string.confirm_forget_clicked_yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        CoreBodyTemperatureActivity.this.disconnectConfirmed();
+                    }
+                })
+                .setNegativeButton(R.string.confirm_forget_clicked_no, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
+
+    private void disconnectConfirmed() {
         AppPreferences.removeDevice(this);
         finish();
     }
