@@ -47,7 +47,7 @@ android {
     compileSdkVersion 29
 
     defaultConfig {
-        versionCode 1
+        versionCode 10001
         versionName "1.0.1"
 
         minSdkVersion 24
