@@ -17,6 +17,8 @@ package com.greenteg.core.wearos;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -76,6 +78,25 @@ public class MainActivity<REQUEST_ENABLE_BT> extends FragmentActivity {
     private final int REQUEST_LOCATION_PERMISSION = 1;
     private static final int REQUEST_ENABLE_BT = 1;
     private TextView mRationaleTextView;
+    private boolean assumeLocationPermission = true;
+
+
+    private void checkAndRequestPermissions() {
+        //Ask for ACCESS_FINE_LOCATION permission if necessary:
+        if (ActivityCompat.checkSelfPermission(
+                this, Manifest.permission.ACCESS_FINE_LOCATION) ==
+                PackageManager.PERMISSION_GRANTED) {
+            Intent intent = new Intent(this, DeviceScanActivity.class);
+            startActivity(intent);
+            connectToSavedDevice();
+        } else {
+            // You can directly ask for the permission.
+            Log.d(TAG, "permission fine location not granted");
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    REQUEST_LOCATION_PERMISSION);
+        }
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -86,19 +107,7 @@ public class MainActivity<REQUEST_ENABLE_BT> extends FragmentActivity {
     }
 
     public void startScanButtonClicked(View view) {
-        //Ask for ACCESS_FINE_LOCATION permission if necessary:
-        if (ActivityCompat.checkSelfPermission(
-                this, Manifest.permission.ACCESS_FINE_LOCATION) ==
-                PackageManager.PERMISSION_GRANTED) {
-            Intent intent = new Intent(this, DeviceScanActivity.class);
-            startActivity(intent);
-            connectToSavedDevice();
-        } else {
-            // You can directly ask for the permission.
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    REQUEST_LOCATION_PERMISSION);
-        }
+        checkAndRequestPermissions();
     }
 
     @Override
@@ -115,9 +124,36 @@ public class MainActivity<REQUEST_ENABLE_BT> extends FragmentActivity {
                     startActivity(intent);
                 }
             } else {
-                Toast.makeText(this, R.string.location_permission_denied, Toast.LENGTH_LONG).show();
+                Log.d(TAG, "location permission not granted, ask again");
+                if(ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
+                    showDialogOK(R.string.location_permission_denied,
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                switch (which) {
+                                    case DialogInterface.BUTTON_POSITIVE:
+                                        checkAndRequestPermissions();
+                                        break;
+                                    case DialogInterface.BUTTON_NEGATIVE:
+                                        // proceed with logic by disabling the related features or quit the app.
+                                        break;
+                                }
+                            }
+                        });
+                } else {
+                    Toast.makeText(this, R.string.location_permission_denied_for_good, Toast.LENGTH_LONG).show();
+                }
             }
         }
+    }
+
+    private void showDialogOK(int resID, DialogInterface.OnClickListener okListener) {
+        new AlertDialog.Builder(this)
+                .setMessage(resID)
+                .setPositiveButton(R.string.location_dialogue_positive, okListener)
+                .setNegativeButton(R.string.location_dialogue_negative, okListener)
+                .create()
+                .show();
     }
 
     @Override
@@ -130,6 +166,7 @@ public class MainActivity<REQUEST_ENABLE_BT> extends FragmentActivity {
             mRationaleTextView.setText(R.string.location_permission_rationale_no_show);
         } else {
             mRationaleTextView.setText(R.string.location_permission_rationale);
+            assumeLocationPermission = false;
         }
 
         connectToSavedDevice();
@@ -143,7 +180,7 @@ public class MainActivity<REQUEST_ENABLE_BT> extends FragmentActivity {
 
     private void connectToSavedDevice() {
         String deviceAddress = AppPreferences.getDeviceAddress(this);
-        if (deviceAddress != null) {
+        if (deviceAddress != null && assumeLocationPermission) {
             Intent intent = new Intent(this, DeviceScanActivity.class);
             startActivity(intent);
         }
