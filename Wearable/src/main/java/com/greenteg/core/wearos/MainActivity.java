@@ -17,17 +17,11 @@ package com.greenteg.core.wearos;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
-import android.content.Context;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
@@ -36,13 +30,6 @@ import android.widget.Toast;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
-import androidx.wear.ambient.AmbientModeSupport;
-
-import java.lang.ref.WeakReference;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 
 /**
  * IMPORTANT NOTE: Most apps shouldn't use always on ambient mode, as it drains battery life. Unless
@@ -83,153 +70,44 @@ import java.util.concurrent.TimeUnit;
  * Faces API documentation: keeping most pixels black, avoiding large blocks of white pixels, using
  * only black and white, disabling anti-aliasing, etc.
  */
-public class MainActivity<REQUEST_ENABLE_BT> extends FragmentActivity
-        implements AmbientModeSupport.AmbientCallbackProvider {
+public class MainActivity<REQUEST_ENABLE_BT> extends FragmentActivity {
 
     private static final String TAG = "MainActivity";
-
-    /**
-     * Custom 'what' for Message sent to Handler.
-     */
-    private static final int MSG_UPDATE_SCREEN = 0;
-
-    /**
-     * Milliseconds between updates based on state.
-     */
-    private static final long ACTIVE_INTERVAL_MS = TimeUnit.SECONDS.toMillis(1);
-
-    private static final long AMBIENT_INTERVAL_MS = TimeUnit.SECONDS.toMillis(10);
-
-    /**
-     * Action for updating the display in ambient mode, per our custom refresh cycle.
-     */
-    private static final String AMBIENT_UPDATE_ACTION =
-            "com.greenteg.core_wearos.action.AMBIENT_UPDATE";
-
-    /**
-     * Number of pixels to offset the content rendered in the display to prevent screen burn-in.
-     */
-    private static final int BURN_IN_OFFSET_PX = 10;
-
-    /**
-     * Ambient mode controller attached to this display. Used by Activity to see if it is in ambient
-     * mode.
-     */
-    private AmbientModeSupport.AmbientController mAmbientController;
-
-    /**
-     * If the display is low-bit in ambient mode. i.e. it requires anti-aliased fonts.
-     */
-    private boolean mIsLowBitAmbient;
-
-    /**
-     * If the display requires burn-in protection in ambient mode, rendered pixels need to be
-     * intermittently offset to avoid screen burn-in.
-     */
-    private boolean mDoBurnInProtection;
-
-    private View mContentView;
-    private TextView mTimeTextView;
-    private TextView mTimeStampTextView;
-    private TextView mStateTextView;
-    private TextView mUpdateRateTextView;
-    private TextView mDrawCountTextView;
-
-    private final SimpleDateFormat sDateFormat = new SimpleDateFormat("HH:mm:ss", Locale.US);
-
-    private volatile int mDrawCount = 0;
-
-    /**
-     * Since the handler (used in active mode) can't wake up the processor when the device is in
-     * ambient mode and undocked, we use an Alarm to cover ambient mode updates when we need them
-     * more frequently than every minute. Remember, if getting updates once a minute in ambient mode
-     * is enough, you can do away with the Alarm code and just rely on the onUpdateAmbient()
-     * callback.
-     */
-    private AlarmManager mAmbientUpdateAlarmManager;
-
-    private PendingIntent mAmbientUpdatePendingIntent;
-    private BroadcastReceiver mAmbientUpdateBroadcastReceiver;
-
-    /**
-     * This custom handler is used for updates in "Active" mode. We use a separate static class to
-     * help us avoid memory leaks.
-     */
-    private final Handler mActiveModeUpdateHandler = new ActiveModeUpdateHandler(this);
 
     //for permission request and turn-on-bluetooth request
     private final int REQUEST_LOCATION_PERMISSION = 1;
     private static final int REQUEST_ENABLE_BT = 1;
+    private TextView mRationaleTextView;
+    private boolean assumeLocationPermission = true;
+
+
+    private void checkAndRequestPermissions() {
+        //Ask for ACCESS_FINE_LOCATION permission if necessary:
+        if (ActivityCompat.checkSelfPermission(
+                this, Manifest.permission.ACCESS_FINE_LOCATION) ==
+                PackageManager.PERMISSION_GRANTED) {
+            Intent intent = new Intent(this, DeviceScanActivity.class);
+            startActivity(intent);
+            connectToSavedDevice();
+        } else {
+            // You can directly ask for the permission.
+            Log.d(TAG, "permission fine location not granted");
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    REQUEST_LOCATION_PERMISSION);
+        }
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate()");
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
-
-        //Ask for ACCESS_FINE_LOCATION permission if necessary:
-        if (ActivityCompat.checkSelfPermission(
-                this, Manifest.permission.ACCESS_FINE_LOCATION) ==
-                PackageManager.PERMISSION_GRANTED) {
-            connectToSavedDevice();
-        } else {
-            // You can directly ask for the permission.
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    REQUEST_LOCATION_PERMISSION);
-        }
-
-
-        mAmbientController = AmbientModeSupport.attach(this);
-
-        mAmbientUpdateAlarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-
-        /*
-         * Create a PendingIntent which we'll give to the AlarmManager to send ambient mode updates
-         * on an interval which we've define.
-         */
-        Intent ambientUpdateIntent = new Intent(AMBIENT_UPDATE_ACTION);
-
-        /*
-         * Retrieves a PendingIntent that will perform a broadcast. You could also use getActivity()
-         * to retrieve a PendingIntent that will start a new activity, but be aware that actually
-         * triggers onNewIntent() which causes lifecycle changes (onPause() and onResume()) which
-         * might trigger code to be re-executed more often than you want.
-         *
-         * If you do end up using getActivity(), also make sure you have set activity launchMode to
-         * singleInstance in the manifest.
-         *
-         * Otherwise, it is easy for the AlarmManager launch Intent to open a new activity
-         * every time the Alarm is triggered rather than reusing this Activity.
-         */
-        mAmbientUpdatePendingIntent =
-                PendingIntent.getBroadcast(
-                        this, 0, ambientUpdateIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        /*
-         * An anonymous broadcast receiver which will receive ambient update requests and trigger
-         * display refresh.
-         */
-        mAmbientUpdateBroadcastReceiver =
-                new BroadcastReceiver() {
-                    @Override
-                    public void onReceive(Context context, Intent intent) {
-                        refreshDisplayAndSetNextUpdate();
-                    }
-                };
-
-        mContentView = findViewById(R.id.content_view);
-        mTimeTextView = findViewById(R.id.time);
-        mTimeStampTextView = findViewById(R.id.time_stamp);
-        mStateTextView = findViewById(R.id.state);
-        mUpdateRateTextView = findViewById(R.id.update_rate);
-        mDrawCountTextView = findViewById(R.id.draw_count);
+        mRationaleTextView = findViewById(R.id.textview_permission_rationale);
     }
 
     public void startScanButtonClicked(View view) {
-        Intent intent = new Intent(this, DeviceScanActivity.class);
-        startActivity(intent);
+        checkAndRequestPermissions();
     }
 
     @Override
@@ -241,25 +119,56 @@ public class MainActivity<REQUEST_ENABLE_BT> extends FragmentActivity
                     grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 if (ContextCompat.checkSelfPermission(MainActivity.this,
                         Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                    Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show();
-                    connectToSavedDevice();
+                    //Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(this, DeviceScanActivity.class);
+                    startActivity(intent);
                 }
             } else {
-                Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "location permission not granted, ask again");
+                if(ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
+                    showDialogOK(R.string.location_permission_denied,
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                switch (which) {
+                                    case DialogInterface.BUTTON_POSITIVE:
+                                        checkAndRequestPermissions();
+                                        break;
+                                    case DialogInterface.BUTTON_NEGATIVE:
+                                        // proceed with logic by disabling the related features or quit the app.
+                                        break;
+                                }
+                            }
+                        });
+                } else {
+                    Toast.makeText(this, R.string.location_permission_denied_for_good, Toast.LENGTH_LONG).show();
+                }
             }
         }
     }
 
+    private void showDialogOK(int resID, DialogInterface.OnClickListener okListener) {
+        new AlertDialog.Builder(this)
+                .setMessage(resID)
+                .setPositiveButton(R.string.location_dialogue_positive, okListener)
+                .setNegativeButton(R.string.location_dialogue_negative, okListener)
+                .create()
+                .show();
+    }
 
     @Override
     public void onResume() {
         Log.d(TAG, "onResume()");
         super.onResume();
+        if (ActivityCompat.checkSelfPermission(
+                this, Manifest.permission.ACCESS_FINE_LOCATION) ==
+                PackageManager.PERMISSION_GRANTED) {
+            mRationaleTextView.setText(R.string.location_permission_rationale_no_show);
+        } else {
+            mRationaleTextView.setText(R.string.location_permission_rationale);
+            assumeLocationPermission = false;
+        }
 
-        IntentFilter filter = new IntentFilter(AMBIENT_UPDATE_ACTION);
-        registerReceiver(mAmbientUpdateBroadcastReceiver, filter);
-
-        refreshDisplayAndSetNextUpdate();
         connectToSavedDevice();
     }
 
@@ -267,198 +176,13 @@ public class MainActivity<REQUEST_ENABLE_BT> extends FragmentActivity
     public void onPause() {
         Log.d(TAG, "onPause()");
         super.onPause();
-
-        unregisterReceiver(mAmbientUpdateBroadcastReceiver);
-
-        mActiveModeUpdateHandler.removeMessages(MSG_UPDATE_SCREEN);
-        mAmbientUpdateAlarmManager.cancel(mAmbientUpdatePendingIntent);
     }
 
     private void connectToSavedDevice() {
         String deviceAddress = AppPreferences.getDeviceAddress(this);
-
-        if (deviceAddress != null) {
+        if (deviceAddress != null && assumeLocationPermission) {
             Intent intent = new Intent(this, DeviceScanActivity.class);
             startActivity(intent);
-        }
-    }
-
-    /**
-     * Loads data/updates screen (via method), but most importantly, sets up the next refresh
-     * (active mode = Handler and ambient mode = Alarm).
-     */
-    private void refreshDisplayAndSetNextUpdate() {
-
-        loadDataAndUpdateScreen();
-
-        long timeMs = System.currentTimeMillis();
-
-        if (mAmbientController.isAmbient()) {
-            /* Calculate next trigger time (based on state). */
-            long delayMs = AMBIENT_INTERVAL_MS - (timeMs % AMBIENT_INTERVAL_MS);
-            long triggerTimeMs = timeMs + delayMs;
-
-            mAmbientUpdateAlarmManager.setExact(
-                    AlarmManager.RTC_WAKEUP, triggerTimeMs, mAmbientUpdatePendingIntent);
-        } else {
-            /* Calculate next trigger time (based on state). */
-            long delayMs = ACTIVE_INTERVAL_MS - (timeMs % ACTIVE_INTERVAL_MS);
-
-            mActiveModeUpdateHandler.removeMessages(MSG_UPDATE_SCREEN);
-            mActiveModeUpdateHandler.sendEmptyMessageDelayed(MSG_UPDATE_SCREEN, delayMs);
-        }
-    }
-
-    /**
-     * Updates display based on Ambient state. If you need to pull data, you should do it here.
-     */
-    private void loadDataAndUpdateScreen() {
-
-        mDrawCount += 1;
-        long currentTimeMs = System.currentTimeMillis();
-
-        mTimeTextView.setText(sDateFormat.format(new Date()));
-        if (mAmbientController.isAmbient()) {
-
-            mTimeStampTextView.setText(getString(R.string.timestamp_label, "ambient"));
-
-            mStateTextView.setText(getString(R.string.mode_ambient_label));
-            mUpdateRateTextView.setText(
-                    getString(R.string.update_rate_label, (AMBIENT_INTERVAL_MS / 1000)));
-
-        } else {
-            String deviceAddress = "00:00:00";
-
-            mTimeStampTextView.setText(getString(R.string.timestamp_label, deviceAddress));
-
-            mStateTextView.setText(getString(R.string.mode_active_label));
-            mUpdateRateTextView.setText(
-                    getString(R.string.update_rate_label, (ACTIVE_INTERVAL_MS / 1000)));
-
-        }
-        mDrawCountTextView.setText(getString(R.string.draw_count_label, mDrawCount));
-    }
-
-    @Override
-    public AmbientModeSupport.AmbientCallback getAmbientCallback() {
-        return new MyAmbientCallback();
-    }
-
-    private class MyAmbientCallback extends AmbientModeSupport.AmbientCallback {
-        /**
-         * Prepares the UI for ambient mode.
-         */
-        @Override
-        public void onEnterAmbient(Bundle ambientDetails) {
-            super.onEnterAmbient(ambientDetails);
-
-            mIsLowBitAmbient =
-                    ambientDetails.getBoolean(AmbientModeSupport.EXTRA_LOWBIT_AMBIENT, false);
-            mDoBurnInProtection =
-                    ambientDetails.getBoolean(AmbientModeSupport.EXTRA_BURN_IN_PROTECTION, false);
-
-            /* Clears Handler queue (only needed for updates in active mode). */
-            mActiveModeUpdateHandler.removeMessages(MSG_UPDATE_SCREEN);
-
-            /*
-             * Following best practices outlined in WatchFaces API (keeping most pixels black,
-             * avoiding large blocks of white pixels, using only black and white, and disabling
-             * anti-aliasing, etc.)
-             */
-            mStateTextView.setTextColor(Color.WHITE);
-            mUpdateRateTextView.setTextColor(Color.WHITE);
-            mDrawCountTextView.setTextColor(Color.WHITE);
-
-            if (mIsLowBitAmbient) {
-                mTimeTextView.getPaint().setAntiAlias(false);
-                mTimeStampTextView.getPaint().setAntiAlias(false);
-                mStateTextView.getPaint().setAntiAlias(false);
-                mUpdateRateTextView.getPaint().setAntiAlias(false);
-                mDrawCountTextView.getPaint().setAntiAlias(false);
-            }
-
-            refreshDisplayAndSetNextUpdate();
-        }
-
-        /**
-         * Updates the display in ambient mode on the standard interval. Since we're using a custom
-         * refresh cycle, this method does NOT update the data in the display. Rather, this method
-         * simply updates the positioning of the data in the screen to avoid burn-in, if the display
-         * requires it.
-         */
-        @Override
-        public void onUpdateAmbient() {
-            super.onUpdateAmbient();
-
-            /*
-             * If the screen requires burn-in protection, views must be shifted around periodically
-             * in ambient mode. To ensure that content isn't shifted off the screen, avoid placing
-             * content within 10 pixels of the edge of the screen.
-             *
-             * Since we're potentially applying negative padding, we have ensured
-             * that the containing view is sufficiently padded (see res/layout/activity_main.xml).
-             *
-             * Activities should also avoid solid white areas to prevent pixel burn-in. Both of
-             * these requirements only apply in ambient mode, and only when this property is set
-             * to true.
-             */
-            if (mDoBurnInProtection) {
-                int x = (int) (Math.random() * 2 * BURN_IN_OFFSET_PX - BURN_IN_OFFSET_PX);
-                int y = (int) (Math.random() * 2 * BURN_IN_OFFSET_PX - BURN_IN_OFFSET_PX);
-                mContentView.setPadding(x, y, 0, 0);
-            }
-        }
-
-        /**
-         * Restores the UI to active (non-ambient) mode.
-         */
-        @Override
-        public void onExitAmbient() {
-            super.onExitAmbient();
-
-            /* Clears out Alarms since they are only used in ambient mode. */
-            mAmbientUpdateAlarmManager.cancel(mAmbientUpdatePendingIntent);
-
-            mStateTextView.setTextColor(Color.GREEN);
-            mUpdateRateTextView.setTextColor(Color.GREEN);
-            mDrawCountTextView.setTextColor(Color.GREEN);
-
-            if (mIsLowBitAmbient) {
-                mTimeTextView.getPaint().setAntiAlias(true);
-                mTimeStampTextView.getPaint().setAntiAlias(true);
-                mStateTextView.getPaint().setAntiAlias(true);
-                mUpdateRateTextView.getPaint().setAntiAlias(true);
-                mDrawCountTextView.getPaint().setAntiAlias(true);
-            }
-
-            /* Reset any random offset applied for burn-in protection. */
-            if (mDoBurnInProtection) {
-                mContentView.setPadding(0, 0, 0, 0);
-            }
-
-            refreshDisplayAndSetNextUpdate();
-        }
-    }
-
-    /**
-     * Handler separated into static class to avoid memory leaks.
-     */
-    private static class ActiveModeUpdateHandler extends Handler {
-        private final WeakReference<MainActivity> mMainActivityWeakReference;
-
-        ActiveModeUpdateHandler(MainActivity reference) {
-            mMainActivityWeakReference = new WeakReference<>(reference);
-        }
-
-        @Override
-        public void handleMessage(Message message) {
-            MainActivity mainActivity = mMainActivityWeakReference.get();
-
-            if (mainActivity != null) {
-                if (message.what == MSG_UPDATE_SCREEN) {
-                    mainActivity.refreshDisplayAndSetNextUpdate();
-                }
-            }
         }
     }
 

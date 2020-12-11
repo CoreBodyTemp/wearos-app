@@ -15,21 +15,28 @@
 -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name">CORE</string>
-    <!-- timestamp field misused to display text-->
-    <string name="timestamp_label">Timestamp: %1$s</string>
-    <string name="mode_active_label">Active Mode (Handler)</string>
-    <string name="mode_ambient_label">Ambient Mode (Alarm)</string>
-    <string name="update_rate_label">Update rate: %1$d sec</string>
-    <string name="draw_count_label">Draw count: %1$d</string>
+    <!-- for Welcome Screen Main Activity-->
+    <string name="location_permission_denied">Scanning for BLE devices like CORE needs location permission.</string>
+    <string name="location_dialogue_positive">OK</string>
+    <string name="location_dialogue_negative">Cancel</string>
+    <string name="location_permission_denied_for_good">Go to app settings to grant location service permission</string>
+
+    <string name="location_permission_rationale">
+        Tao below to scan for CORE.
+        To sustain a connection, the app requires access to your location in the background.</string>
+    <string name="location_permission_rationale_no_show"></string>
+    <string name="scanning_timed_out">No CORE devices found. Press Button to restart.
+        Please make sure Bluetooth is not restricted on your device
+        (no battery saving settings).</string>
 
     <!-- for BLE related modules: -->
     <string name="ble_not_supported">BLE is not supported</string>
     <string name="label_data">Data:</string>
     <string name="label_device_address">address:</string>
     <string name="label_state">State:</string>
-    <string name="no_data">No data</string>
+    <string name="no_data">No data...</string>
     <string name="connected">Connected</string>
-    <string name="disconnected">Disconnected</string>
+    <string name="disconnected">Connecting...</string>
     <string name="title_devices">BLE Device Scan</string>
     <string name="error_bluetooth_not_supported">Bluetooth not supported.</string>
 
@@ -42,7 +49,7 @@
     <string name="menu_disconnect">Disconnect</string>
     <string name="menu_scan">Scan</string>
     <string name="menu_stop">Stop</string>
-    <string name="start_scan">Start Scan</string>
+    <string name="start_scan">Scan for CORE</string>
     <string name="confirm_forget_clicked">Are you sure you want to forget the device?</string>
     <string name="confirm_forget_clicked_yes">Yes</string>
     <string name="confirm_forget_clicked_no">No</string>
