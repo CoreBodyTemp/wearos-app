@@ -50,7 +50,7 @@
     <string name="menu_scan">Scan</string>
     <string name="menu_stop">Stop</string>
     <string name="start_scan">Scan for CORE</string>
-    <string name="confirm_forget_clicked">Are you sure you want to forget the device?</string>
+    <string name="confirm_forget_clicked">Are you sure you want to forget this device?</string>
     <string name="confirm_forget_clicked_yes">Yes</string>
     <string name="confirm_forget_clicked_no">No</string>
 

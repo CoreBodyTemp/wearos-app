@@ -87,7 +87,7 @@ public class DeviceScanActivity extends Activity {
     private void displayScanningTimeout() {
         Log.d(TAG, "displayScanningTimeout()");
         scanLeDevice(false);
-        Toast.makeText(this, R.string.scanning_timed_out, Toast.LENGTH_LONG).show();
+        Toast.makeText(DeviceScanActivity.this, R.string.scanning_timed_out, Toast.LENGTH_LONG).show();
         Intent intent = new Intent(DeviceScanActivity.this, MainActivity.class);
         startActivity(intent);
     }
@@ -303,7 +303,7 @@ public class DeviceScanActivity extends Activity {
 
             if (deviceScanActivity != null) {
                 if (message.what == MSG_SCANNING_TIMEOUT) {
-                    if (deviceScanActivity.mDeviceListAdapter.getItemCount() == 0) {
+                    if (deviceScanActivity.mDeviceListAdapter.getItemCount() == 0 && deviceScanActivity.mScanning == true) {
                         deviceScanActivity.displayScanningTimeout();
                     }
                 }
