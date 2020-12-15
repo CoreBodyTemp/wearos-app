@@ -22,8 +22,7 @@
     <string name="location_permission_denied_for_good">Go to app settings to grant location service permission</string>
 
     <string name="location_permission_rationale">
-        Tap below to scan for CORE.
-        To sustain a connection, the app requires access to your location in the background.</string>
+        Tap below to scan for CORE.</string>
     <string name="location_permission_rationale_no_show"></string>
     <string name="scanning_timed_out">No CORE devices found. Press Button to restart.
         Please make sure Bluetooth is not restricted on your device
