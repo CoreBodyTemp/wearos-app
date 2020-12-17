@@ -124,7 +124,7 @@ public class BluetoothLeService extends Service {
             double temperature = TemperatureReading.fromCharacteristic(characteristic);
             float fTemperature = (float) temperature;
             AppPreferences.setLastCbtValue(BluetoothLeService.this, fTemperature);
-            intent.putExtra(EXTRA_TEMPERATURE_VALUE, temperature);
+            //intent.putExtra(EXTRA_TEMPERATURE_VALUE, temperature);
         } else {
             intent = new Intent(action);
         }
