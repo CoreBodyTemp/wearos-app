@@ -187,6 +187,8 @@ public class DeviceScanActivity extends Activity {
             mBluetoothLeScanner.stopScan(mScanCallback);
             setScanning(false);
         }
+        String myString = getString(R.string.connecting_to) + " " + device.getAddress();
+        Toast.makeText(this, myString, Toast.LENGTH_SHORT).show();
         startActivity(intent);
     }
 
