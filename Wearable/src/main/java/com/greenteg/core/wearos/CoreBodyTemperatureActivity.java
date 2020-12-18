@@ -32,6 +32,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -49,8 +50,6 @@ public class CoreBodyTemperatureActivity extends Activity {
 
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
-
-    private static final int REQUEST_DISCONNECTION = 1;
 
 
     private double mTemperature;
@@ -106,7 +105,7 @@ public class CoreBodyTemperatureActivity extends Activity {
                     invalidateOptionsMenu();
                     clearUI();
                     Toast.makeText(context, R.string.disconnected, Toast.LENGTH_SHORT).show();
-                    mTemperature = 0;
+                    setConnecting(true);
                     displayTemperature();
                 }
                 break;
@@ -115,7 +114,7 @@ public class CoreBodyTemperatureActivity extends Activity {
                 }
                 break;
                 case BluetoothLeService.ACTION_TEMPERATURE_AVAILABLE: {
-                    mTemperature = intent.getDoubleExtra(BluetoothLeService.EXTRA_TEMPERATURE_VALUE, 0);
+                    //mTemperature = intent.getDoubleExtra(BluetoothLeService.EXTRA_TEMPERATURE_VALUE, 0);
                     displayTemperature();
 
                 }
@@ -124,9 +123,13 @@ public class CoreBodyTemperatureActivity extends Activity {
     };
 
     private void setConnecting(boolean enabled) {
+        Log.d(TAG, "setConnecting to: "+ enabled);
         if (enabled) {
             mProgressBar.setVisibility(View.VISIBLE);
+            //keep screen during "connecting..." (it's annoying if the user cannot check whether the connection attempt was successful
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         } else {
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
             mProgressBar.setVisibility(View.INVISIBLE);
         }
     }
@@ -168,6 +171,7 @@ public class CoreBodyTemperatureActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        displayTemperature();
         registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
         if (mBluetoothLeService != null) {
             final boolean result = mBluetoothLeService.connect(mDeviceAddress);
@@ -178,13 +182,13 @@ public class CoreBodyTemperatureActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
-        unregisterReceiver(mGattUpdateReceiver);
         Log.d(TAG, "onPause() called");
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        unregisterReceiver(mGattUpdateReceiver);
         unbindService(mServiceConnection);
         // we will no longer get updates for CBT and it will soon be outdated, thus set it to 0
         AppPreferences.setLastCbtValue(CoreBodyTemperatureActivity.this,0);
@@ -197,6 +201,7 @@ public class CoreBodyTemperatureActivity extends Activity {
     }
 
     private void displayTemperature() {
+        mTemperature = AppPreferences.getLastCbtValue(this);
         if (mTemperature != 0) {
             String value;
 
@@ -212,8 +217,10 @@ public class CoreBodyTemperatureActivity extends Activity {
             }
 
             mDataField.setText(value);
+            Log.d(TAG, "setting temperature on display to: " + value);
         } else {
             mDataField.setText(R.string.no_data);
+            Log.d(TAG, "setting temperature on display to: " + "No data...");
         }
     }
 
