@@ -26,8 +26,10 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
@@ -110,6 +112,32 @@ public class BluetoothLeService extends Service {
         }
     };
 
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        public void onReceive (Context context, Intent intent) {
+            String action = intent.getAction();
+            Log.d(TAG, action);
+
+            if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
+                if(intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1)
+                        == BluetoothAdapter.STATE_OFF)
+                    Log.d(TAG, "bluetooth turned off. setting lastCbtValue value to 0.");
+                // Bluetooth is disconnected, do handling here:
+                AppPreferences.setLastCbtValue(BluetoothLeService.this, 0);
+                //broadcastUpdate(intent);
+                String intentAction;
+                intentAction = ACTION_GATT_DISCONNECTED;
+                broadcastUpdate(intentAction);
+
+            }
+
+        }
+
+    };
+
+    private void broadcastUpdate(Intent intent) {
+        sendBroadcast(intent);
+    }
+
     private void broadcastUpdate(final String action) {
         final Intent intent = new Intent(action);
         sendBroadcast(intent);
@@ -176,6 +204,8 @@ public class BluetoothLeService extends Service {
             return false;
         }
 
+        registerReceiver(this.mReceiver, new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
+
         return true;
     }
 
@@ -192,6 +222,11 @@ public class BluetoothLeService extends Service {
     public boolean connect(final String address) {
         if (mBluetoothAdapter == null || address == null) {
             Log.w(TAG, "BluetoothAdapter not initialized or unspecified address.");
+            return false;
+        }
+
+        if (!mBluetoothAdapter.isEnabled()) {
+            Log.w(TAG, "BluetoothAdapter is not enabled");
             return false;
         }
 
@@ -240,8 +275,11 @@ public class BluetoothLeService extends Service {
         if (mBluetoothGatt == null) {
             return;
         }
-        mBluetoothGatt.close();
-        mBluetoothGatt = null;
+        if (mBluetoothAdapter.isEnabled()) {
+            mBluetoothGatt.close();
+            mBluetoothGatt = null;
+        }
+        unregisterReceiver(mReceiver);
     }
 
     /**
