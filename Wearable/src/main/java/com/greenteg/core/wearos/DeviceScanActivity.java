@@ -39,6 +39,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -118,6 +119,13 @@ public class DeviceScanActivity extends Activity {
                 (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         mBluetoothAdapter = bluetoothManager.getAdapter();
 
+        if(!mBluetoothAdapter.isEnabled())
+        {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+        }
+        Log.d(TAG, "line after bluetooth enable intent.");
+
         // Checks if Bluetooth is supported on the device.
         if (mBluetoothAdapter == null) {
             Toast.makeText(this, R.string.error_bluetooth_not_supported, Toast.LENGTH_SHORT).show();
@@ -131,14 +139,14 @@ public class DeviceScanActivity extends Activity {
 
         // Ensures Bluetooth is enabled on the device.  If Bluetooth is not currently enabled,
         // fire an intent to display a dialog asking the user to grant permission to enable it.
-        if (!mBluetoothAdapter.isEnabled()) {
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+        if (mBluetoothAdapter.isEnabled()) {
+            mDeviceList.clear();
+            mDeviceListAdapter.notifyDataSetChanged();
+            scanLeDevice(true);
         }
-
-        mDeviceList.clear();
-        mDeviceListAdapter.notifyDataSetChanged();
-        scanLeDevice(true);
+        else {
+            finish();
+        }
     }
 
     @Override
@@ -148,7 +156,11 @@ public class DeviceScanActivity extends Activity {
             finish();
             return;
         }
-        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_ENABLE_BT && resultCode == Activity.RESULT_OK) {
+            Log.w(TAG, "user enabled BT.");
+            Intent intent = new Intent(DeviceScanActivity.this, MainActivity.class);
+            startActivity(intent);
+        }
     }
 
     @Override
@@ -160,7 +172,16 @@ public class DeviceScanActivity extends Activity {
     }
 
     private void scanLeDevice(final boolean enable) {
+        if (mBluetoothLeScanner == null) {
+            mBluetoothLeScanner =
+                    BluetoothAdapter.getDefaultAdapter().getBluetoothLeScanner();
+        }
         if (enable) {
+            if(!mBluetoothAdapter.isEnabled())
+            {
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+            }
             mSettings = new ScanSettings.Builder().setScanMode(SCAN_MODE_BALANCED).build();  //default settings
 
             setScanning(true);
@@ -171,7 +192,9 @@ public class DeviceScanActivity extends Activity {
 
         } else {
             setScanning(false);
-            mBluetoothLeScanner.stopScan(mScanCallback);
+            if(mBluetoothLeScanner != null && mBluetoothAdapter.isEnabled()) {
+                mBluetoothLeScanner.stopScan(mScanCallback);
+            }
         }
         invalidateOptionsMenu();
     }

@@ -70,7 +70,7 @@ import androidx.fragment.app.FragmentActivity;
  * Faces API documentation: keeping most pixels black, avoiding large blocks of white pixels, using
  * only black and white, disabling anti-aliasing, etc.
  */
-public class MainActivity<REQUEST_ENABLE_BT> extends FragmentActivity {
+public class MainActivity extends Activity {
 
     private static final String TAG = "MainActivity";
 
@@ -159,7 +159,6 @@ public class MainActivity<REQUEST_ENABLE_BT> extends FragmentActivity {
     @Override
     public void onResume() {
         Log.d(TAG, "onResume()");
-        super.onResume();
         if (ActivityCompat.checkSelfPermission(
                 this, Manifest.permission.ACCESS_FINE_LOCATION) ==
                 PackageManager.PERMISSION_GRANTED) {
@@ -170,6 +169,7 @@ public class MainActivity<REQUEST_ENABLE_BT> extends FragmentActivity {
         }
 
         connectToSavedDevice();
+        super.onResume();
     }
 
     @Override
