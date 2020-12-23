@@ -195,6 +195,11 @@ public class BluetoothLeService extends Service {
             return false;
         }
 
+        if (!mBluetoothAdapter.isEnabled()) {
+            Log.w(TAG, "BluetoothAdapter is not enabled");
+            return false;
+        }
+
         // Previously connected device.  Try to reconnect.
         if (address.equals(mBluetoothDeviceAddress)
                 && mBluetoothGatt != null) {
@@ -240,8 +245,10 @@ public class BluetoothLeService extends Service {
         if (mBluetoothGatt == null) {
             return;
         }
-        mBluetoothGatt.close();
-        mBluetoothGatt = null;
+        if (mBluetoothAdapter.isEnabled()) {
+            mBluetoothGatt.close();
+            mBluetoothGatt = null;
+        }
     }
 
     /**

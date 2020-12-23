@@ -21,6 +21,7 @@ import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
+import android.bluetooth.BluetoothProfile;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -176,6 +177,11 @@ public class CoreBodyTemperatureActivity extends Activity {
         if (mBluetoothLeService != null) {
             final boolean result = mBluetoothLeService.connect(mDeviceAddress);
             Log.d(TAG, "Connect request result=" + result);
+            if (result == false) {
+                finish();
+                Intent intent = new Intent(this, MainActivity.class);
+                startActivity(intent);
+            }
         }
     }
 
