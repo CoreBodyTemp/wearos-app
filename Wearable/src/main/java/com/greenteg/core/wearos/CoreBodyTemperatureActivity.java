@@ -105,7 +105,7 @@ public class CoreBodyTemperatureActivity extends Activity {
                     updateConnectionState(R.string.disconnected);
                     invalidateOptionsMenu();
                     clearUI();
-                    Toast.makeText(context, R.string.disconnected, Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(context, R.string.disconnected, Toast.LENGTH_SHORT).show();
                     setConnecting(true);
                     displayTemperature();
                 }
@@ -117,7 +117,14 @@ public class CoreBodyTemperatureActivity extends Activity {
                 case BluetoothLeService.ACTION_TEMPERATURE_AVAILABLE: {
                     //mTemperature = intent.getDoubleExtra(BluetoothLeService.EXTRA_TEMPERATURE_VALUE, 0);
                     displayTemperature();
-
+                }
+                case BluetoothAdapter.ACTION_STATE_CHANGED: {
+                    if(intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1)
+                            == BluetoothAdapter.STATE_OFF) {
+                        updateConnectionState(R.string.disconnected);
+                        clearUI();
+                        displayTemperature();
+                    }
                 }
             }
         }
@@ -337,6 +344,7 @@ public class CoreBodyTemperatureActivity extends Activity {
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED);
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
         intentFilter.addAction(BluetoothLeService.ACTION_TEMPERATURE_AVAILABLE);
+        intentFilter.addAction(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED);
         return intentFilter;
     }
 }
