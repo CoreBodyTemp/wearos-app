@@ -44,7 +44,7 @@ List<String> dirs = [
 
 android {
 
-    compileSdkVersion 29
+    compileSdkVersion 28
 
     defaultConfig {
         versionCode 10100
