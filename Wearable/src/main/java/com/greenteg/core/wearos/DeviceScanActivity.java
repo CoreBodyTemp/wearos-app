@@ -171,6 +171,10 @@ public class DeviceScanActivity extends Activity {
         mDeviceListAdapter.notifyDataSetChanged();
     }
 
+    /**
+     * Enables or disables scanning for Bluetooth LE devices.
+     * @param enable If true, enable scanning. False otherwise.
+     */
     private void scanLeDevice(final boolean enable) {
         if (mBluetoothLeScanner == null) {
             mBluetoothLeScanner =
@@ -196,7 +200,6 @@ public class DeviceScanActivity extends Activity {
                 mBluetoothLeScanner.stopScan(mScanCallback);
             }
         }
-        invalidateOptionsMenu();
     }
 
     private void connectToDevice(BluetoothDevice device) {

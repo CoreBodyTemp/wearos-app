@@ -106,14 +106,12 @@ public class CoreBodyTemperatureActivity extends Activity {
                 case BluetoothLeService.ACTION_GATT_CONNECTED: {
                     updateConnectionState(R.string.connected);
                     setConnecting(false);
-                    invalidateOptionsMenu();
                     Toast.makeText(context, R.string.connected, Toast.LENGTH_SHORT).show();
                     displayTemperature();
                 }
                 break;
                 case BluetoothLeService.ACTION_GATT_DISCONNECTED: {
                     updateConnectionState(R.string.disconnected);
-                    invalidateOptionsMenu();
                     clearUI();
                     //Toast.makeText(context, R.string.disconnected, Toast.LENGTH_SHORT).show();
                     setConnecting(true);
@@ -317,7 +315,7 @@ public class CoreBodyTemperatureActivity extends Activity {
             HashMap<String, String> currentServiceData = new HashMap<String, String>();
             uuid = gattService.getUuid().toString();
             currentServiceData.put(
-                    LIST_NAME, SampleGattAttributes.lookup(uuid, unknownServiceString));
+                    LIST_NAME, CoreGattAttributes.lookup(uuid, unknownServiceString));
             currentServiceData.put(LIST_UUID, uuid);
             gattServiceData.add(currentServiceData);
 
@@ -333,7 +331,7 @@ public class CoreBodyTemperatureActivity extends Activity {
                 charas.add(gattCharacteristic);
                 HashMap<String, String> currentCharaData = new HashMap<String, String>();
                 uuid = gattCharacteristic.getUuid().toString();
-                String mGattAttribute = SampleGattAttributes.lookup(uuid, unknownCharaString);
+                String mGattAttribute = CoreGattAttributes.lookup(uuid, unknownCharaString);
                 Log.d(TAG, "gattAttribute: " + mGattAttribute);
                 // extract interesting characteristics (Battery level and Body Temperature)
                 if (mGattAttribute.equals("Temperature Measurement")) {

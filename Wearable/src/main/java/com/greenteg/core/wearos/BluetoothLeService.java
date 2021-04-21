@@ -47,31 +47,27 @@ public class BluetoothLeService extends Service {
     private String mBluetoothDeviceAddress;
     private BluetoothGatt mBluetoothGatt;
 
-    private static final int STATE_DISCONNECTED = 0;
-    private static final int STATE_CONNECTING = 1;
-    private static final int STATE_CONNECTED = 2;
-
     public final static String ACTION_GATT_CONNECTED =
-            "com.example.bluetooth.le.ACTION_GATT_CONNECTED";
+            "com.greenteg.core.wearos.bluetooth.le.ACTION_GATT_CONNECTED";
     public final static String ACTION_GATT_DISCONNECTED =
-            "com.example.bluetooth.le.ACTION_GATT_DISCONNECTED";
+            "com.greenteg.core.wearos.bluetooth.le.ACTION_GATT_DISCONNECTED";
     public final static String ACTION_GATT_SERVICES_DISCOVERED =
-            "com.example.bluetooth.le.ACTION_GATT_SERVICES_DISCOVERED";
+            "com.greenteg.core.wearos.bluetooth.le.ACTION_GATT_SERVICES_DISCOVERED";
     public final static String ACTION_TEMPERATURE_AVAILABLE =
-            "com.example.bluetooth.le.ACTION_TEMPERATURE_AVAILABLE";
+            "com.greenteg.core.wearos.bluetooth.le.ACTION_TEMPERATURE_AVAILABLE";
     public final static String ACTION_BATTERY_LEVEL_AVAILABLE =
-            "com.example.bluetooth.le.ACTION_BATTERY_LEVEL_AVAILABLE";
+            "com.greenteg.core.wearos.bluetooth.le.ACTION_BATTERY_LEVEL_AVAILABLE";
     public final static String EXTRA_TEMPERATURE_VALUE =
-            "com.example.bluetooth.le.EXTRA_TEMPERATURE_VALUE";
+            "com.greenteg.core.wearos.bluetooth.le.EXTRA_TEMPERATURE_VALUE";
     public final static String EXTRA_BATTERY_VALUE =
-            "com.example.bluetooth.le.EXTRA_BATTERY_VALUE";
+            "com.greenteg.core.wearos.bluetooth.le.EXTRA_BATTERY_VALUE";
     public final static String ACTION_DATA_AVAILABLE =
-            "com.example.bluetooth.le.ACTION_DATA_AVAILABLE";
+            "com.greenteg.core.wearos.bluetooth.le.ACTION_DATA_AVAILABLE";
 
     public final static UUID UUID_TEMPERATURE_MEASUREMENT =
-            UUID.fromString(SampleGattAttributes.TEMPERATURE_MEASUREMENT);
+            UUID.fromString(CoreGattAttributes.TEMPERATURE_MEASUREMENT);
     public final static UUID UUID_BATTERY_LEVEL =
-            UUID.fromString(SampleGattAttributes.BATTERY_LEVEL);
+            UUID.fromString(CoreGattAttributes.BATTERY_LEVEL);
 
 
     private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
@@ -291,6 +287,7 @@ public class BluetoothLeService extends Service {
      * released properly.
      */
     public void close() {
+        Log.d(TAG, "attempting to close() BluetoothGatt");
         if (mBluetoothGatt == null) {
             return;
         }
@@ -333,7 +330,7 @@ public class BluetoothLeService extends Service {
         // This is specific to Temperature Measurement.
         if (UUID_TEMPERATURE_MEASUREMENT.equals(characteristic.getUuid())) {
             BluetoothGattDescriptor descriptor = characteristic.getDescriptor(
-                    UUID.fromString(SampleGattAttributes.CLIENT_CHARACTERISTIC_CONFIG));
+                    UUID.fromString(CoreGattAttributes.CLIENT_CHARACTERISTIC_CONFIG));
             if (enabled) {
                 descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
             } else {

@@ -17,6 +17,14 @@ public class TemperatureReading {
         FAHRENHEIT
     }
 
+    /**
+     * Transform the value of a characteristic that implements the medical device numeric format (MDNF),
+     * i. e. a flag and a IEEE11073 32bit float into a value of type double. We use this here only
+     * for temperature data from the health thermometer characteristic
+     *
+     * @param characteristic, the gatt characteristic where we read the value from.
+     * @return the temperature reading in degree Celsius.
+     */
     public static double fromCharacteristic(BluetoothGattCharacteristic characteristic) {
         int flags = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0);
         Type type = (flags & 0x01) > 0 ? Type.FAHRENHEIT : Type.CELSIUS;
