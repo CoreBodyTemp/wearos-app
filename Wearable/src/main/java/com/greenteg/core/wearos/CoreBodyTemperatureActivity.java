@@ -21,7 +21,6 @@ import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
-import android.bluetooth.BluetoothProfile;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -34,6 +33,7 @@ import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -56,11 +56,19 @@ public class CoreBodyTemperatureActivity extends Activity {
     private double mTemperature;
     private TextView mConnectionState;
     private TextView mDataField;
+
+    private ImageView mBattery0to9;
+    private ImageView mBattery10to24;
+    private ImageView mBattery25to49;
+    private ImageView mBattery50to74;
+    private ImageView mBattery75to100;
+
     private String mDeviceAddress;
     private BluetoothLeService mBluetoothLeService;
     private ArrayList<ArrayList<BluetoothGattCharacteristic>> mGattCharacteristics =
             new ArrayList<ArrayList<BluetoothGattCharacteristic>>();
-    private BluetoothGattCharacteristic mNotifyCharacteristic;
+    private BluetoothGattCharacteristic mTemperatureCharacteristic;
+    private BluetoothGattCharacteristic mBatteryCharacteristic;
 
     private final String LIST_NAME = "NAME";
     private final String LIST_UUID = "UUID";
@@ -91,6 +99,8 @@ public class CoreBodyTemperatureActivity extends Activity {
         @Override
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
+            int battery_level;
+            Log.d(TAG, "BroadcastReceiver: action "+action);
 
             switch (action) {
                 case BluetoothLeService.ACTION_GATT_CONNECTED: {
@@ -112,12 +122,28 @@ public class CoreBodyTemperatureActivity extends Activity {
                 break;
                 case BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED: {
                     listGattServices(mBluetoothLeService.getSupportedGattServices());
+                    if (mBatteryCharacteristic != null) {
+                        readBattery();
+                    } else {
+                        // try to immediately set up notification for temperature
+                        setTemperatureNotification(true);
+                    }
                 }
                 break;
                 case BluetoothLeService.ACTION_TEMPERATURE_AVAILABLE: {
                     //mTemperature = intent.getDoubleExtra(BluetoothLeService.EXTRA_TEMPERATURE_VALUE, 0);
                     displayTemperature();
                 }
+                break;
+                case BluetoothLeService.ACTION_BATTERY_LEVEL_AVAILABLE: {
+                    battery_level = intent.getIntExtra(BluetoothLeService.EXTRA_BATTERY_VALUE, -1);
+                    Log.d(TAG, "received battery level: "+battery_level);
+                    mConnectionState.setVisibility(View.INVISIBLE);
+                    displayBattery(battery_level);
+                    // setup notification on Temperature characteristic AFTER getting battery level:
+                    setTemperatureNotification(true);
+                }
+                break;
                 case BluetoothAdapter.ACTION_STATE_CHANGED: {
                     if(intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1)
                             == BluetoothAdapter.STATE_OFF) {
@@ -129,6 +155,14 @@ public class CoreBodyTemperatureActivity extends Activity {
             }
         }
     };
+
+    private void readBattery() {
+        mBluetoothLeService.readCharacteristic(mBatteryCharacteristic);
+    }
+
+    private void setTemperatureNotification(boolean enable) {
+        mBluetoothLeService.setCharacteristicNotification(mTemperatureCharacteristic, enable);
+    }
 
     private void setConnecting(boolean enabled) {
         Log.d(TAG, "setConnecting to: "+ enabled);
@@ -160,6 +194,12 @@ public class CoreBodyTemperatureActivity extends Activity {
         mConnectionState = (TextView) findViewById(R.id.connection_state);
         mDataField = (TextView) findViewById(R.id.current_CBT);
 
+        mBattery0to9 = (ImageView) findViewById(R.id.battery0to9);
+        mBattery10to24 = (ImageView) findViewById(R.id.battery10to24);
+        mBattery25to49 = (ImageView) findViewById(R.id.battery25to49);
+        mBattery50to74 = (ImageView) findViewById(R.id.battery50to74);
+        mBattery75to100 = (ImageView) findViewById(R.id.battery75to100);
+
         mDataField.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -167,8 +207,6 @@ public class CoreBodyTemperatureActivity extends Activity {
                 toggleTemperatureUnits();
             }
         });
-        //getActionBar().setTitle(mDeviceName);
-        //getActionBar().setDisplayHomeAsUpEnabled(true);
         Log.d(TAG, "start BluetoothLeService Intent next.");
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
@@ -181,13 +219,24 @@ public class CoreBodyTemperatureActivity extends Activity {
         super.onResume();
         displayTemperature();
         registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
+        // to be sure, make all battery icons invisible:
+        mBattery0to9.setVisibility(View.INVISIBLE);
+        mBattery10to24.setVisibility(View.INVISIBLE);
+        mBattery25to49.setVisibility(View.INVISIBLE);
+        mBattery50to74.setVisibility(View.INVISIBLE);
+        mBattery75to100.setVisibility(View.INVISIBLE);
+
         if (mBluetoothLeService != null) {
             final boolean result = mBluetoothLeService.connect(mDeviceAddress);
             Log.d(TAG, "Connect request result=" + result);
-            if (result == false) {
+            if (!result) {
                 finish();
                 Intent intent = new Intent(this, MainActivity.class);
                 startActivity(intent);
+            }
+            // try to read battery value:
+            if (mBatteryCharacteristic != null) {
+                readBattery();
             }
         }
     }
@@ -237,6 +286,22 @@ public class CoreBodyTemperatureActivity extends Activity {
         }
     }
 
+    private void displayBattery(int battery_level) {
+        if (battery_level>=0 & battery_level<=10) {
+            mBattery0to9.setVisibility(View.VISIBLE);
+        } else if (battery_level>=10 & battery_level<=24) {
+            mBattery10to24.setVisibility(View.VISIBLE);
+        } else if (battery_level>=25 & battery_level<=49) {
+            mBattery25to49.setVisibility(View.VISIBLE);
+        } else if (battery_level>=50 & battery_level<=74) {
+            mBattery50to74.setVisibility(View.VISIBLE);
+        } else if (battery_level>=75 & battery_level<=100) {
+            mBattery75to100.setVisibility(View.VISIBLE);
+        } else {
+            Log.i(TAG, "battery level not in range 0 to 100");
+        }
+    }
+
     private void listGattServices(List<BluetoothGattService> gattServices) {
         if (gattServices == null) return;
         String uuid = null;
@@ -270,24 +335,15 @@ public class CoreBodyTemperatureActivity extends Activity {
                 uuid = gattCharacteristic.getUuid().toString();
                 String mGattAttribute = SampleGattAttributes.lookup(uuid, unknownCharaString);
                 Log.d(TAG, "gattAttribute: " + mGattAttribute);
-                // immediately set up notification if you detect Temperature Measurement Characteristic
+                // extract interesting characteristics (Battery level and Body Temperature)
                 if (mGattAttribute.equals("Temperature Measurement")) {
                     final int charaProp = gattCharacteristic.getProperties();
-                    /*if ((charaProp | BluetoothGattCharacteristic.PROPERTY_READ) > 0) {
-                        // If there is an active notification on a characteristic, clear
-                        // it first so it doesn't update the data field on the user interface.
-                        if (mNotifyCharacteristic != null) {
-                            mBluetoothLeService.setCharacteristicNotification(
-                                    mNotifyCharacteristic, false);
-                            mNotifyCharacteristic = null;
-                        }
-                        mBluetoothLeService.readCharacteristic(gattCharacteristic);
-                    }*/
                     if ((charaProp | BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0) {
-                        mNotifyCharacteristic = gattCharacteristic;
-                        mBluetoothLeService.setCharacteristicNotification(
-                                gattCharacteristic, true);
+                        mTemperatureCharacteristic = gattCharacteristic;
                     }
+                }
+                if (mGattAttribute.equals("Battery Level")) {
+                    mBatteryCharacteristic = gattCharacteristic;
                 }
 
                 currentCharaData.put(
@@ -344,6 +400,7 @@ public class CoreBodyTemperatureActivity extends Activity {
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED);
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
         intentFilter.addAction(BluetoothLeService.ACTION_TEMPERATURE_AVAILABLE);
+        intentFilter.addAction(BluetoothLeService.ACTION_BATTERY_LEVEL_AVAILABLE);
         intentFilter.addAction(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED);
         return intentFilter;
     }

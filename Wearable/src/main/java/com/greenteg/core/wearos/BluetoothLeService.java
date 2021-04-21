@@ -59,13 +59,20 @@ public class BluetoothLeService extends Service {
             "com.example.bluetooth.le.ACTION_GATT_SERVICES_DISCOVERED";
     public final static String ACTION_TEMPERATURE_AVAILABLE =
             "com.example.bluetooth.le.ACTION_TEMPERATURE_AVAILABLE";
+    public final static String ACTION_BATTERY_LEVEL_AVAILABLE =
+            "com.example.bluetooth.le.ACTION_BATTERY_LEVEL_AVAILABLE";
     public final static String EXTRA_TEMPERATURE_VALUE =
             "com.example.bluetooth.le.EXTRA_TEMPERATURE_VALUE";
+    public final static String EXTRA_BATTERY_VALUE =
+            "com.example.bluetooth.le.EXTRA_BATTERY_VALUE";
     public final static String ACTION_DATA_AVAILABLE =
             "com.example.bluetooth.le.ACTION_DATA_AVAILABLE";
 
     public final static UUID UUID_TEMPERATURE_MEASUREMENT =
             UUID.fromString(SampleGattAttributes.TEMPERATURE_MEASUREMENT);
+    public final static UUID UUID_BATTERY_LEVEL =
+            UUID.fromString(SampleGattAttributes.BATTERY_LEVEL);
+
 
     private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
         @Override
@@ -146,13 +153,25 @@ public class BluetoothLeService extends Service {
     private void broadcastUpdate(final String action,
                                  final BluetoothGattCharacteristic characteristic) {
         Intent intent;
-
+        Log.d(TAG, "broadcastUpdate from characteristic with uuid: "+characteristic.getUuid());
         if (UUID_TEMPERATURE_MEASUREMENT.equals(characteristic.getUuid())) {
             intent = new Intent(ACTION_TEMPERATURE_AVAILABLE);
             double temperature = TemperatureReading.fromCharacteristic(characteristic);
             float fTemperature = (float) temperature;
             AppPreferences.setLastCbtValue(BluetoothLeService.this, fTemperature);
             //intent.putExtra(EXTRA_TEMPERATURE_VALUE, temperature);
+        } else if (UUID_BATTERY_LEVEL.equals(characteristic.getUuid())) {
+            intent = new Intent(ACTION_BATTERY_LEVEL_AVAILABLE);
+            int battery_level = -1;
+            // verify format is UINT8:
+            final int charaProp = characteristic.getProperties();
+            if ((charaProp | BluetoothGattCharacteristic.FORMAT_UINT8) > 0) {
+                battery_level = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0);
+            }
+            Log.d(TAG, "battery level: "+battery_level);
+            intent.putExtra(
+                    EXTRA_BATTERY_VALUE, battery_level
+                    );
         } else {
             intent = new Intent(action);
         }
@@ -315,7 +334,11 @@ public class BluetoothLeService extends Service {
         if (UUID_TEMPERATURE_MEASUREMENT.equals(characteristic.getUuid())) {
             BluetoothGattDescriptor descriptor = characteristic.getDescriptor(
                     UUID.fromString(SampleGattAttributes.CLIENT_CHARACTERISTIC_CONFIG));
-            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+            if (enabled) {
+                descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+            } else {
+                descriptor.setValue(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
+            }
             mBluetoothGatt.writeDescriptor(descriptor);
         }
     }
