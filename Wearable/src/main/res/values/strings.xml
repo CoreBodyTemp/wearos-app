@@ -15,6 +15,15 @@
 -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name">CORE</string>
+
+    <!-- Content Descriptions -->
+    <string name="battery0to9text">battery state 0 to 9 percent</string>
+    <string name="battery10to24text">battery state 10 to 24 percent</string>
+    <string name="battery25to49text">battery state 25 to 49 percent</string>
+    <string name="battery50to74text">battery state 50 to 74 percent</string>
+    <string name="battery75to100text">battery state 75 to 100 percent</string>
+    <string name="core_logo">CORE Logo</string>
+
     <!-- for Welcome Screen Main Activity-->
     <string name="location_permission_denied">Scanning for BLE devices like CORE needs location permission.</string>
     <string name="location_dialogue_positive">OK</string>

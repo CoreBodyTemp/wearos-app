@@ -20,7 +20,6 @@
         android:id="@+id/device_address"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="device_address"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.504"
         app:layout_constraintStart_toStartOf="parent"
@@ -34,6 +33,7 @@
         android:layout_marginTop="16dp"
         android:layout_marginEnd="32dp"
         android:layout_marginBottom="14dp"
+        android:contentDescription="@string/core_logo"
         android:scaleType="centerInside"
         android:src="@drawable/core_logo"
         app:layout_constraintBottom_toTopOf="@+id/current_CBT"
@@ -47,6 +47,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:text="@string/disconnected"
+        android:visibility="visible"
         app:layout_constraintBottom_toTopOf="@+id/device_address"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -74,4 +75,64 @@
         app:layout_constraintStart_toStartOf="@+id/current_CBT"
         app:layout_constraintTop_toTopOf="@+id/current_CBT"
         tools:showIn="@layout/activity_device_scan" />
+
+    <ImageView
+        android:id="@+id/battery0to9"
+        android:layout_width="85dp"
+        android:layout_height="25dp"
+        android:contentDescription="@string/battery0to9text"
+        android:src="@drawable/ic_battery_0_9"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@+id/connection_state"
+        app:layout_constraintEnd_toEndOf="@+id/connection_state"
+        app:layout_constraintStart_toStartOf="@+id/connection_state"
+        app:layout_constraintTop_toTopOf="@+id/connection_state" />
+
+    <ImageView
+        android:id="@+id/battery10to24"
+        android:layout_width="85dp"
+        android:layout_height="25dp"
+        android:contentDescription="@string/battery10to24text"
+        android:src="@drawable/ic_battery_10_24"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@+id/connection_state"
+        app:layout_constraintEnd_toEndOf="@+id/connection_state"
+        app:layout_constraintStart_toStartOf="@+id/connection_state"
+        app:layout_constraintTop_toTopOf="@+id/connection_state" />
+
+    <ImageView
+        android:id="@+id/battery25to49"
+        android:layout_width="85dp"
+        android:layout_height="25dp"
+        android:contentDescription="@string/battery25to49text"
+        android:src="@drawable/ic_battery_25_49"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@+id/connection_state"
+        app:layout_constraintEnd_toEndOf="@+id/connection_state"
+        app:layout_constraintStart_toStartOf="@+id/connection_state"
+        app:layout_constraintTop_toTopOf="@+id/connection_state" />
+
+    <ImageView
+        android:id="@+id/battery50to74"
+        android:layout_width="85dp"
+        android:layout_height="25dp"
+        android:contentDescription="@string/battery50to74text"
+        android:src="@drawable/ic_battery_50_74svg"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@+id/connection_state"
+        app:layout_constraintEnd_toEndOf="@+id/connection_state"
+        app:layout_constraintStart_toStartOf="@+id/connection_state"
+        app:layout_constraintTop_toTopOf="@+id/connection_state" />
+
+    <ImageView
+        android:id="@+id/battery75to100"
+        android:layout_width="85dp"
+        android:layout_height="25dp"
+        android:contentDescription="@string/battery75to100text"
+        android:src="@drawable/ic_battery_75_100"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@+id/connection_state"
+        app:layout_constraintEnd_toEndOf="@+id/connection_state"
+        app:layout_constraintStart_toStartOf="@+id/connection_state"
+        app:layout_constraintTop_toTopOf="@+id/connection_state" />
 </androidx.constraintlayout.widget.ConstraintLayout>
