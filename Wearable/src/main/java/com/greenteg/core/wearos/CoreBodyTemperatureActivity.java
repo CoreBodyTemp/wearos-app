@@ -374,6 +374,9 @@ public class CoreBodyTemperatureActivity extends Activity {
 
     private void disconnectConfirmed() {
         AppPreferences.removeDevice(this);
+        if (mBluetoothLeService!=null) {
+            mBluetoothLeService.disconnect();
+        }
         finish();
     }
 
