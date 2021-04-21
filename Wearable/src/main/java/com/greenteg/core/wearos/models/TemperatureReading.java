@@ -1,9 +1,17 @@
 package com.greenteg.core.wearos.models;
 
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.util.Log;
+
 import java.util.Calendar;
 
 public class TemperatureReading {
+    static final String TAG = TemperatureReading.class.getSimpleName();
+    static final int IEEE11073_NaN = 0x007FFFFF;
+    static final int IEEE11073_inf = 0x007FFFFE;
+    static final int IEEE11073_minus_inf = 0x00800002;
+    static final int IEEE11073_NRes = 0x00800000;
+
     public enum Type {
         CELSIUS,
         FAHRENHEIT
@@ -13,9 +21,20 @@ public class TemperatureReading {
         int flags = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0);
         Type type = (flags & 0x01) > 0 ? Type.FAHRENHEIT : Type.CELSIUS;
         int tempData = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT32, 1); //ByteBuffer.wrap(data, 1, 4).getInt();
-        int exponent = tempData >> 24;
-        int mantissa = tempData & 0x00FFFFFF;
-        double actualTemp = (double) mantissa * Math.pow(10, exponent);
+        double actualTemp = 0; //set temp to 0, in case the reading is invalid / NaN etc
+        if (tempData==IEEE11073_NaN) {
+            Log.d(TAG, "Received cbt value IEEE11073 NaN (not a number).");
+        } else if (tempData==IEEE11073_inf) {
+            Log.d(TAG, "Received cbt value IEEE11073 + Infinity ");
+        } else if (tempData==IEEE11073_minus_inf){
+            Log.d(TAG, "Received cbt value IEEE11073 - Infinity ");
+        } else if (tempData==IEEE11073_NRes) {
+            Log.d(TAG, "Received cbt value IEEE11073 NRes (Not at this resolution).");
+        } else { // tempData is valid reading, convert it to double
+            int exponent = tempData >> 24;
+            int mantissa = tempData & 0x00FFFFFF;
+            actualTemp = (double) mantissa * Math.pow(10, exponent);
+        }
         long time;
         if ((flags & 0x02) > 0) {
             int year = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT16, 5);
