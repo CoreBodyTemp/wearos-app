@@ -30,6 +30,7 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.wearable.complications.ProviderUpdateRequester;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -242,6 +243,9 @@ public class CoreBodyTemperatureActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
+        new ProviderUpdateRequester(
+                this, new ComponentName(this, CbtComplicationProviderService.class))
+                .requestUpdateAll();
         Log.d(TAG, "onPause() called");
     }
 

@@ -25,7 +25,7 @@
     app:borderRadius="50dp"
     app:borderStyle="dashed"
     app:borderWidth="3dp"
-    app:highlightColor="@color/fuchsia"
+    app:highlightColor="@color/black"
     app:iconColor="@color/dark_blue"
     app:rangedValuePrimaryColor="@color/teal"
     app:rangedValueRingWidth="1dp"
