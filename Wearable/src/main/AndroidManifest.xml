@@ -77,6 +77,8 @@
                 android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
                 android:value="300"/> <!-- this is the minimum accepted value by the system-->
         </service>
+        <receiver android:name=".ComplicationToggleReceiver"/>
+
         <service
             android:name=".ComplicationWatchFaceService"
             android:label="@string/app_name"

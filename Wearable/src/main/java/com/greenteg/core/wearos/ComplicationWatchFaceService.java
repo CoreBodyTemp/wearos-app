@@ -251,6 +251,10 @@ public class ComplicationWatchFaceService extends CanvasWatchFaceService {
             mComplicationDrawableSparseArray.put(LEFT_COMPLICATION_ID, leftComplicationDrawable);
             mComplicationDrawableSparseArray.put(RIGHT_COMPLICATION_ID, rightComplicationDrawable);
 
+            ComponentName CbtComplicationProvider = new ComponentName(getApplicationContext(), CbtComplicationProviderService.class);
+
+            setDefaultComplicationProvider(RIGHT_COMPLICATION_ID,CbtComplicationProvider,ComplicationData.TYPE_SHORT_TEXT);
+
             setActiveComplications(COMPLICATION_IDS);
         }
 
@@ -314,87 +318,25 @@ public class ComplicationWatchFaceService extends CanvasWatchFaceService {
 
         @Override
         public void onTapCommand(int tapType, int x, int y, long eventTime) {
-            // TODO: Step 5, OnTapCommand()
             Log.d(TAG, "OnTapCommand()");
             switch (tapType) {
                 case TAP_TYPE_TAP:
-                    int tappedComplicationId = getTappedComplicationId(x, y);
-                    if (tappedComplicationId != -1) {
-                        onComplicationTap(tappedComplicationId);
+
+                    // If your background complication is the first item in your array, you need
+                    // to walk backward through the array to make sure the tap isn't for a
+                    // complication above the background complication.
+                    for (int i = COMPLICATION_IDS.length - 1; i >= 0; i--) {
+                        int complicationId = COMPLICATION_IDS[i];
+                        ComplicationDrawable complicationDrawable =
+                                mComplicationDrawableSparseArray.get(complicationId);
+
+                        boolean successfulTap = complicationDrawable.onTap(x, y);
+
+                        if (successfulTap) {
+                            return;
+                        }
                     }
                     break;
-            }
-        }
-
-        /*
-         * Determines if tap inside a complication area or returns -1.
-         */
-        private int getTappedComplicationId(int x, int y) {
-
-            int complicationId;
-            ComplicationData complicationData;
-            ComplicationDrawable complicationDrawable;
-
-            long currentTimeMillis = System.currentTimeMillis();
-
-            for (int i = 0; i < COMPLICATION_IDS.length; i++) {
-                complicationId = COMPLICATION_IDS[i];
-                complicationData = mActiveComplicationDataSparseArray.get(complicationId);
-
-                if ((complicationData != null)
-                        && (complicationData.isActive(currentTimeMillis))
-                        && (complicationData.getType() != ComplicationData.TYPE_NOT_CONFIGURED)
-                        && (complicationData.getType() != ComplicationData.TYPE_EMPTY)) {
-
-                    complicationDrawable = mComplicationDrawableSparseArray.get(complicationId);
-                    Rect complicationBoundingRect = complicationDrawable.getBounds();
-
-                    if (complicationBoundingRect.width() > 0) {
-                        if (complicationBoundingRect.contains(x, y)) {
-                            return complicationId;
-                        }
-                    } else {
-                        Log.e(TAG, "Not a recognized complication id.");
-                    }
-                }
-            }
-            return -1;
-        }
-
-        // Fires PendingIntent associated with complication (if it has one).
-        private void onComplicationTap(int complicationId) {
-            // TODO: Step 5, onComplicationTap()
-            Log.d(TAG, "onComplicationTap()");
-
-            ComplicationData complicationData =
-                    mActiveComplicationDataSparseArray.get(complicationId);
-
-            if (complicationData != null) {
-
-                if (complicationData.getTapAction() != null) {
-                    try {
-                        complicationData.getTapAction().send();
-                    } catch (PendingIntent.CanceledException e) {
-                        Log.e(TAG, "onComplicationTap() tap action error: " + e);
-                    }
-
-                } else if (complicationData.getType() == ComplicationData.TYPE_NO_PERMISSION) {
-
-                    // Watch face does not have permission to receive complication data, so launch
-                    // permission request.
-                    ComponentName componentName =
-                            new ComponentName(
-                                    getApplicationContext(), com.greenteg.core.wearos.ComplicationWatchFaceService.class);
-
-                    Intent permissionRequestIntent =
-                            ComplicationHelperActivity.createPermissionRequestHelperIntent(
-                                    getApplicationContext(), componentName);
-
-                    startActivity(permissionRequestIntent);
-                }
-
-            } else {
-                Log.d(TAG, "No PendingIntent for complication " + complicationId + ".");
             }
         }
 
