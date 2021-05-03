@@ -1,23 +1,23 @@
 # Core Wear OS App
 
-CORE Body Temperature Monitoring is an easy-to-use wearable product that using a Swiss-Made sensor and can monitor and delivery real-time, accurate core body temperature data. Find out more on [corebodytemp.com](https://corebodytemp.com/). 
+CORE Body Temperature Monitoring is an easy-to-use wearable product that using a Swiss-Made sensor and can monitor and delivery real-time, accurate core body temperature data. Find out more on [corebodytemp.com](https://corebodytemp.com/).
 
 ## You will need to have a CORE sensor for this app to work.
 
 Order CORE at [corebodytemp.com](https://corebodytemp.com/products/core).
 
-## _You already have your personal CORE?_ 
+## _You already have your personal CORE?_
 
-Awesome! Start using it and track your body temperature as easy as it never have been before. Explore the official apps [on the Playstore](https://play.google.com/store/apps/details?id=com.greenteg.core.app) and [on the Appstore](https://apps.apple.com/us/app/id1521866309) for mobile phones, or other platforms such as Garmin. 
+Awesome! Start using it and track your body temperature as easy as it never have been before. Explore the official apps [on the Playstore](https://play.google.com/store/apps/details?id=com.greenteg.core.app) and [on the Appstore](https://apps.apple.com/us/app/id1521866309) for mobile phones, or other platforms such as Garmin.
 
 ## _You have a wear OS device?_
-**Then this is for you!** This code repository contains the source of the [CORE Wear OS app](https://play.google.com/store/apps/details?id=com.greenteg.core.wearos). 
-We invite you to use this as a reference for your own apps interfacing with CORE. 
+**Then this is for you!** This code repository contains the source of the [CORE Wear OS app](https://play.google.com/store/apps/details?id=com.greenteg.core.wearos).
+We invite you to use this as a reference for your own apps interfacing with CORE.
 
 NOTE: This content is licensed under the Apache License, Version 2.0. More info: info@greenteg.com
 
 > Copyright (C) 2021, greenTEG AG
-> 
+>
 > Licensed under the Apache License, Version 2.0 (the "License");
 > you may not use this file except in compliance with the License.
 > You may obtain a copy of the License at
@@ -41,7 +41,7 @@ You have to enable the developer mode on your watch([explained here](https://dev
 1. Download latest version of [AndroidStudio](https://developer.android.com/studio?gclid=CjwKCAiA-_L9BRBQEiwA-bm5fgngJrqeA-ZMr0p1ZHucPuT18LjNNtI1UeSWD-3fwrI-lFoIe0NtxBoCRjkQAvD_BwE&gclsrc=aw.ds)
 2. Clone this project into a folder on your computer using
 `git clone git@gitlab.com:corebodytemp/wearos-app.git` (SSH)
-or 
+or
 `git clone https://gitlab.com/corebodytemp/wearos-app.git` (HTTPS)
 3. import this project into AndroidStudio via File --> New... --> Import Project...
 (this will take a while since all the gradle files need to be downloaded in the background)
@@ -53,6 +53,9 @@ or
 8. Connect the debugger to your WearOS device running
 `adb connect 172.168.11.11` in the terminal
 9. If everything runs smoothly, your WearOS device will appear as a physical device in the dropdown menu next to the green triangle, click that to flash the code onto the WearOS device.
+
+## Further resources:
+In the .pdf `CORE BLE Implementation Notes`, you can find more information about your possibilities to interact with CORE.
 
 # Changelog
 1.2.0 (2021-04-22)
