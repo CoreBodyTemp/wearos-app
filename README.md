@@ -55,7 +55,8 @@ or
 9. If everything runs smoothly, your WearOS device will appear as a physical device in the dropdown menu next to the green triangle, click that to flash the code onto the WearOS device.
 
 ## Further resources:
-In the .pdf `CORE BLE Implementation Notes`, you can find more information about your possibilities to interact with CORE.
+In the .pdf [`CORE BLE Implementation Notes`](https://github.com/CoreBodyTemp/CoreBodyTemp/blob/main/CORE%20BLE%20Implementation%20Notes.pdf), you can find more information about your possibilities to interact with CORE.
+Please also find the specifications of our custom BLE service [`Core Body Temperature Service`](https://github.com/CoreBodyTemp/CoreBodyTemp/blob/main/CoreTemp%20BLE%20Service%20Specification.pdf)
 
 # Changelog
 1.2.0 (2021-04-22)
