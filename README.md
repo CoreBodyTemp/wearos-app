@@ -40,9 +40,9 @@ You have to enable the developer mode on your watch([explained here](https://dev
 
 1. Download latest version of [AndroidStudio](https://developer.android.com/studio?gclid=CjwKCAiA-_L9BRBQEiwA-bm5fgngJrqeA-ZMr0p1ZHucPuT18LjNNtI1UeSWD-3fwrI-lFoIe0NtxBoCRjkQAvD_BwE&gclsrc=aw.ds)
 2. Clone this project into a folder on your computer using
-`git clone git@gitlab.com:corebodytemp/wearos-app.git` (SSH)
+`git clone git@github.com:corebodytemp/wearos-app.git` (SSH)
 or
-`git clone https://gitlab.com/corebodytemp/wearos-app.git` (HTTPS)
+`git clone https://github.com/corebodytemp/wearos-app.git` (HTTPS)
 3. import this project into AndroidStudio via File --> New... --> Import Project...
 (this will take a while since all the gradle files need to be downloaded in the background)
 4. Navigate to the "Terminal" in AndroidStudio.
